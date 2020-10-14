@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import UserRegisterForm,UserUpdateForm
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, student_only, teacher_only
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from courses import data
 
 @login_required
@@ -15,7 +15,11 @@ def home(request):
         if group == 'teacher':
             return render(request, 'users/teacher_home.html')
         if group == 'student':
-            return render(request, 'users/student_home.html')
+            li=[]
+            for u in User.objects.all():
+                if u.groups.all()[0].name=='teacher':
+                    li.append(u)
+            return render(request, 'users/student_home.html',{'li':li})
 @unauthenticated_user
 def register(request):
     if request.method=='POST':
@@ -46,6 +50,8 @@ def profile(request):
     else:
         form=UserUpdateForm(instance=request.user)
     return render(request, 'users/profile.html',{'form':form})
+
+
 
 @login_required
 @teacher_only

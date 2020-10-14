@@ -1,0 +1,7 @@
+{% extends "users/base.html" %}
+{% block content %}
+    <h1>Hi {{ sid }}</h1>
+    {% for fi in f %}
+    <h3><a class="article-title" href="{% url 'feedback-detail' tid sid fi.id %}"> {{ fi.feedback_type }} {{ fi.sem_type }}</a></h3>
+    {% endfor %}
+{% endblock content %}

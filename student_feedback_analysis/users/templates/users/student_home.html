@@ -1,4 +1,7 @@
 {% extends "users/base.html" %}
 {% block content %}
     <h1>Hi student </h1>
+    {% for l in li %}
+        <h3><a class="article-title" href="{% url 'subjects' l.id %}">{{ l.username }}</a></h3>
+    {% endfor %}
 {% endblock content %}
