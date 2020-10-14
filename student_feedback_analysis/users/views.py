@@ -6,6 +6,7 @@ from .forms import UserRegisterForm,UserUpdateForm
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, student_only, teacher_only
 from django.contrib.auth.models import Group
+from courses import data
 
 @login_required
 def home(request):
@@ -49,4 +50,5 @@ def profile(request):
 @login_required
 @teacher_only
 def test(request):
+    data.trying3()
     return render(request,'users/home.html')
