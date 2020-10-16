@@ -20,16 +20,18 @@ class Enroll(models.Model):
 class FeedbackForm(models.Model):
     type_choices=(
       ('prof', 'Professor Feedback'),
-      ('course', 'Course Feedback')
+      ('course', 'Course Feedback'),
+      ('other','Other')
     )
     sem_choices=(
-        ('midsem', 'Mid semester feedback'),
-        ('endsem','End semester feedback')
+        ('midsem', 'Mid Semester'),
+        ('endsem','End Semester'),
+        ('other','Other')
     )
     feedback_type = models.CharField(max_length=100,choices=type_choices)
     sem_type = models.CharField(max_length=100,choices=sem_choices)
     subject = models.ForeignKey("Subject", on_delete=models.CASCADE)
-
+    form_name=models.CharField(max_length = 100,default = "Feedback Form")
     def __str__(self):
         return str(self.subject)+"-"+ self.feedback_type + "-" + self.sem_type
 

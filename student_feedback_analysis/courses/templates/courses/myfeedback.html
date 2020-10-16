@@ -1,0 +1,17 @@
+{% extends "users/base.html" %}
+{% block content %}  
+
+<a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">Cumulative report - Course</a>
+<a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">Cumulative report - Professor</a>
+<a class="btn btn-outline-info" href ="{% url 'newform' s.id %}" style="float: right;margin-left:20px;">Create new form</a>
+<br><br>
+    <h2>My Forms</h2>
+    {% for fi in f %}
+    <a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">View report</a>
+    <a class="btn btn-outline-danger" href ="{% url 'deleteform' s.id fi.id %}" style="float: right;margin-left:20px;">Delete this form</a>
+<a class="btn btn-outline-info" href ="{% url 'editform' s.id fi.id %}" style="float: right;margin-left:20px;">Edit this form</a>
+    
+    <h3><a class="article-title" href="#">{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</a></h3>
+    {% endfor %}
+    
+{% endblock content %}

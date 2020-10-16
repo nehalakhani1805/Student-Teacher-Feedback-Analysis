@@ -1,5 +1,7 @@
 from django import forms
 from django.db import models
+from .models import Subject, FeedbackForm, FormQuestion
+from skills.models import SkillAnswer
 class FormFeedback(forms.Form):
     #username = forms.CharField(max_length=30)
     #password1 = forms.CharField(widget=forms.PasswordInput)
@@ -16,3 +18,38 @@ class FormFeedback(forms.Form):
         for name, value in self.cleaned_data.items():
             if name.startswith('custom_'):
                 yield (self.fields[name].label, value)
+
+class EnrollForm(forms.ModelForm):
+    enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=Subject
+        fields=['enrollment_key']
+
+class StudentFeedbackForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=SkillAnswer
+        fields=['question','yes_or_no','answer']
+
+
+class NewForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=FeedbackForm
+        fields=['form_name','feedback_type','sem_type']
+class NewQuestionForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=FormQuestion
+        fields=['question']
+class EditQuestionForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=FormQuestion
+        fields=['question']
+        

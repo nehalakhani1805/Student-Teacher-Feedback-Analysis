@@ -13,7 +13,8 @@ def home(request):
     if request.user.groups.exists():
         group = request.user.groups.all()[0].name
         if group == 'teacher':
-            return render(request, 'users/teacher_home.html')
+            s=request.user.subject_set.all().order_by('-year')
+            return render(request, 'users/teacher_home.html',{'s':s})
         if group == 'student':
             li=[]
             for u in User.objects.all():
@@ -50,6 +51,10 @@ def profile(request):
     else:
         form=UserUpdateForm(instance=request.user)
     return render(request, 'users/profile.html',{'form':form})
+
+
+
+
 
 
 

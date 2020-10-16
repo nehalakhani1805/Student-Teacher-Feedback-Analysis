@@ -1,6 +1,9 @@
 {% extends "users/base.html" %}
 {% load crispy_forms_tags %}
-{% block content %}
+{% block content %}    
+    <h3>{{ u.first_name }} {{ u.last_name }}</h3>
+    <a class="btn btn-outline-info" href ="#" style="float: right;">View {{ u.first_name }}'s report</a>
+    <br><br>
     <div class="content-section">
         <form method="POST" action =".">
             {% csrf_token %}
@@ -10,7 +13,10 @@
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Submit</button>
+                <a class="btn btn-outline-info" href ="{% url 'home'%} " style="float: right;"> Finish</a>
             </div>
+            
         </form>
+        
     </div>
 {% endblock content %}

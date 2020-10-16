@@ -1,4 +1,7 @@
 {% extends "users/base.html" %}
 {% block content %}
     <h1>Hi teacher</h1>
+    {% for si in s %}
+        <h3><a class="article-title" href="{% url 'subject-detail' si.id %}">{{ si.subject_name }} {{si.year}}</a></h3>
+    {% endfor %}
 {% endblock content %}

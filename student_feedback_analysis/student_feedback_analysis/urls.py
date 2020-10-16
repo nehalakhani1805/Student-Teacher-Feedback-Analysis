@@ -30,4 +30,12 @@ urlpatterns = [
     path('subjects/<int:tid>/',courses_views.subjects,name='subjects'),
     path('subjects/<int:tid>/<int:sid>/',courses_views.subjectfeedback,name='subject-feedback'),
     path('subjects/<int:tid>/<int:sid>/<int:fid>/',courses_views.feedbackdetail,name='feedback-detail'),
+    path('subjectdetail/<int:sid>/',courses_views.subjectdetail,name='subject-detail'),
+    path('subjectdetail/<int:sid>/<int:uid>/',courses_views.studentfeedback,name='student-feedback'),
+    path('subjectdetail/<int:sid>/myfeedback/',courses_views.myfeedback,name='myfeedback'),
+    path('subjectdetail/<int:sid>/myfeedback/newform/',courses_views.newform,name='newform'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/deleteform/',courses_views.deleteform,name='deleteform'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/',courses_views.editform,name='editform'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/<int:fqid>/deletequestion/',courses_views.deletequestion,name='deletequestion'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/<int:fqid>/editquestion/',courses_views.editquestion,name='editquestion'),
 ]

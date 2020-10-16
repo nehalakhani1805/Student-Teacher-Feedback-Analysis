@@ -1,0 +1,9 @@
+{% extends "users/base.html" %}
+{% block content %}  
+    <a class="btn btn-outline-info" href ="{% url 'myfeedback' s.id %}" style="float: right;">View my feedbacks</a>
+    <h3>Student Feedbacks</h3>
+    
+    {% for l in li %}
+    <h3><a class="article-title" href="{% url 'student-feedback' s.id l.id %}">- {{ l.first_name }} {{ l.last_name }}</a></h3>
+    {% endfor %}
+{% endblock content %}
