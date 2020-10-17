@@ -5,6 +5,25 @@ from users.decorators import unauthenticated_user, student_only, teacher_only
 from django.contrib.auth.decorators import login_required
 from .forms import FormFeedback, EnrollForm, StudentFeedbackForm, NewForm, NewQuestionForm, EditQuestionForm
 from django.contrib import messages
+import pandas as pd
+import nltk
+from wordcloud import WordCloud, STOPWORDS
+import numpy as np
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
+stop = set(stopwords.words('english'))
+words = set(nltk.corpus.words.words())
+from nltk.tokenize import RegexpTokenizer
+import re
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import urllib,base64
+from nltk.stem import WordNetLemmatizer
+from nltk.stem import PorterStemmer
 
 # Create your views here.
 @login_required
@@ -61,6 +80,7 @@ def feedbackdetail(request,tid,sid,fid):
         fqli.append(f.question)
     #return render(request,'courses/formquestion.html',{'tid':tid,'sid':sid,'fid':fid,'fq':fq})
     extra_questions = fqli
+    lemmatizer = WordNetLemmatizer()
     form = FormFeedback(request.POST or None, extra=extra_questions)
     if form.is_valid():
         for (question, answer) in form.extra_answers():
@@ -69,7 +89,36 @@ def feedbackdetail(request,tid,sid,fid):
             print(answer)
             f=fq.filter(question=question).first()
             fa=FormAnswer(form_question=f,answer=answer)
+            #remove punctuation
+
+            tokenizer = RegexpTokenizer(r'\w+')
+            tokens = tokenizer.tokenize(fa.answer)
+            final=' '.join(tokens)
+
+
+            #remove non english words
+            a1=" ".join(w for w in nltk.wordpunct_tokenize(final)if w.lower() in words or not w.isalpha())
+
+            #remove proper nouns
+            tokenized2 = nltk.word_tokenize(a1)
+            tokenized=[lemmatizer.lemmatize(w) for w in tokenized2]
+            #tokenized=[ps.stem(w) for w in tokenized3]
+            pos=nltk.tag.pos_tag(tokenized)
+            ed=[word for word,tag in pos if tag!='NNP' and tag!='NNPs']#removing proper nouns
+            end=' '.join(ed)
+
+            #remove stop words
+            # en=[i for i in word_tokenize(end.lower()) if i not in stop] 
+            # final=' '.join(en)
+
+            #using vader classfiers
+            sid=SentimentIntensityAnalyzer()
+            ss=sid.polarity_scores(final)
+            fa.sentiment=ss['compound']
+            fa.processed_answer=final
             fa.save()
+            #fa.save()
+
         return redirect("home")
 
     return render(request, "courses/formquestion.html", {'tid':tid,'sid':sid,'fid':fid,'form': form})
@@ -133,6 +182,98 @@ def newform(request,sid):
     #return render(request, 'users/profile.html',{'form':form})
     #return render(request, 'courses/studentform.html',{'u':u,'form':form})
     return render(request,'courses/newform.html',{'s':s,'form':form})
+
+def grey_color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+    return("hsl(0,100%%,%d%%)" % np.random.randint(35,70))
+
+@login_required
+@teacher_only
+def formreport(request,sid,fid):
+    fa=FormAnswer.objects.all()
+    p=ng=nt=0
+    fi=FeedbackForm.objects.get(id=fid)
+    fq=fi.formquestion_set.first()
+    pl=ngl=ntl=[]
+
+    #pie chart
+    for fai in fa:
+        if fai.form_question.id == fq.id:
+            
+            if fai.sentiment > 0.3:
+                p+=1
+                pl.append(fai)
+            elif 0.1<fai.sentiment<=0.3:
+                nt+=1
+                ntl.append(fai)
+            else:
+                ng+=1
+                ngl.append(fai)
+    labels = 'Positive', 'Neutral', 'Negative'
+    sizes = [p,nt,ng]
+    colors = ['gold', 'lightcoral','yellowgreen']
+    explode = (0.1, 0, 0)  # explode 1st slice
+    
+    # Plot
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=140)
+    
+    plt.axis('equal')
+    #plt.show()
+    fig=plt.gcf()
+    buf=io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    string=base64.b64encode(buf.read())
+    uri=urllib.parse.quote(string)
+    plt.close()
+
+    #positive wordcloud
+    p=[]
+    sentimentanalyzer=SentimentIntensityAnalyzer()
+    for i in pl:
+        a=i.processed_answer.split()
+        for j in a:
+            if((sentimentanalyzer.polarity_scores(j))['compound']>0.3):
+                p.append(j)
+    p1=" ".join(p)
+    wordcloud = WordCloud(background_color='white',
+    max_words=200,max_font_size=80,random_state=42).generate(p1)
+    plt.figure()
+    fig=plt.imshow(wordcloud)
+    plt.axis('off')
+    fig2=plt.gcf()
+    buf2=io.BytesIO()
+    fig2.savefig(buf2, format="png")
+    buf2.seek(0)
+    string2=base64.b64encode(buf2.read())
+    uri2=urllib.parse.quote(string2)
+    plt.close()
+
+    #negative wordcloud
+    p=[]
+    for i in ngl:
+        a=i.processed_answer.split()
+        for j in a:
+            if((sentimentanalyzer.polarity_scores(j))['compound']<0.0):
+                p.append(j)
+    p1=" ".join(p)
+    wordcloud = WordCloud(background_color='white',
+    max_words=20,max_font_size=80,random_state=42).generate(p1)
+    wordcloud.recolor(color_func = grey_color_func)
+    plt.figure()
+    fig=plt.imshow(wordcloud)
+    plt.axis('off')
+    fig3=plt.gcf()
+    buf3=io.BytesIO()
+    fig3.savefig(buf3, format="png")
+    buf3.seek(0)
+    string3=base64.b64encode(buf3.read())
+    uri3=urllib.parse.quote(string3)
+    plt.close()
+    return render(request,'courses/formreport.html',{'data': uri,'data2':uri2,'data3':uri3})
+    #return render(request,'courses/test.html')
+
+
 
 @login_required
 @teacher_only

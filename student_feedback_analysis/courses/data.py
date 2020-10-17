@@ -2,7 +2,26 @@ from .models import Subject,FeedbackForm,FormAnswer,FormQuestion
 from django.contrib.auth.models import User
 import datetime
 import pandas as pd
+import nltk
+from wordcloud import WordCloud, STOPWORDS
 import numpy as np
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
+stop = set(stopwords.words('english'))
+words = set(nltk.corpus.words.words())
+from nltk.tokenize import RegexpTokenizer
+import re
+import matplotlib.pyplot as plt
+from nltk.stem import WordNetLemmatizer
+from nltk.stem import PorterStemmer
+
+
+
+
+
+
 def trying():    
     s_list=['CN','CN','CN','OOP','OOP','OOP','ADS','ADS','ADS','DBMS','DBMS','DBMS','COA','COA','COA','WPL','WPL','WPL','DAA','DAA','DAA']
     count=0
@@ -93,4 +112,42 @@ def trying4():
 
     # for f in FormQuestion.objects.all():
     #     for i in range(10):
+
+
+def trying5():
+    fa=FormAnswer.objects.all()
+    lemmatizer = WordNetLemmatizer()
+    #i=1000
+    for f in fa:  
+        if 3000< f.id <4000:  
+            # i+=1
+            #remove punctuation
+            tokenizer = RegexpTokenizer(r'\w+')
+            tokens = tokenizer.tokenize(f.answer)
+            final=' '.join(tokens)
+
+
+            #remove non english words
+            a1=" ".join(w for w in nltk.wordpunct_tokenize(final)if w.lower() in words or not w.isalpha())
+
+            #remove proper nouns
+            tokenized2 = nltk.word_tokenize(a1)
+            tokenized=[lemmatizer.lemmatize(w) for w in tokenized2]
+            #tokenized=[ps.stem(w) for w in tokenized3]
+            pos=nltk.tag.pos_tag(tokenized)
+            ed=[word for word,tag in pos if tag!='NNP' and tag!='NNPs']#removing proper nouns
+            end=' '.join(ed)
+
+            #remove stop words
+            # en=[i for i in word_tokenize(end.lower()) if i not in stop] 
+            # final=' '.join(en)
+
+            #using vader classfiers
+            sid=SentimentIntensityAnalyzer()
+            ss=sid.polarity_scores(f.processed_answer)
+            f.sentiment=ss['compound']
+            #f.processed_answer=final
+            f.save()
+        # else:
+        #     break
 

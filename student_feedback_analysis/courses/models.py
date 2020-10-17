@@ -47,6 +47,8 @@ class FormAnswer(models.Model):
     form_question = models.ForeignKey("FormQuestion", on_delete=models.CASCADE)
     #student = models.ForeignKey(User, on_delete=models.CASCADE)
     answer = models.TextField()
+    processed_answer = models.TextField(default = "heyy")
+    sentiment = models.FloatField(default=0.4)
 
     def __str__(self):
         return str(self.form_question)+"-"+str(self.id)
