@@ -24,7 +24,7 @@ import io
 import urllib,base64
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
-
+from django.db.models import Q
 # Create your views here.
 @login_required
 @student_only
@@ -162,6 +162,259 @@ def myfeedback(request,sid):
 
     return render(request,'courses/myfeedback.html',{'f':f,'s':s})
 
+def findnumber(s,ft):
+    f=FeedbackForm.objects.filter(Q(subject=s) & Q(feedback_type=ft)).all()
+    lif=[]
+    for fi in f:
+        lif.append(fi)
+    fa=FormAnswer.objects.all()
+    p=nt=ng=0
+    pl=ngl=[]
+    for fai in fa:
+        if fai.form_question.feedback_form in lif:
+            if fai.sentiment>0.3:
+                p+=1
+                #pl.append(fai)
+            elif 0.1<fai.sentiment<=0.3:
+                nt+=1
+            else:
+                ng+=1
+                #ngl.append(fai)
+    return p,nt,ng
+def generatepie(s,feedback_type):
+    f=FeedbackForm.objects.filter(Q(subject=s) & Q(feedback_type=feedback_type))
+    fa=FormAnswer.objects.all()
+    p=nt=ng=0
+    pl=ngl=[]
+    for fai in fa:
+        if fai.form_question.feedback_form in f:
+            if fai.sentiment>0.3:
+                p+=1
+                pl.append(fai)
+            elif 0.1<fai.sentiment<=0.3:
+                nt+=1
+            else:
+                ng+=1
+                ngl.append(fai)
+    labels = 'Positive', 'Neutral', 'Negative'
+    sizes = [p,nt,ng]
+    colors = ['gold', 'lightcoral','yellowgreen']
+    explode = (0.1, 0, 0)  # explode 1st slice
+    
+    # Plot
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=140)
+    
+    plt.axis('equal')
+    plt.tight_layout()
+    #plt.show()
+    fig=plt.gcf()
+    buf=io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    string=base64.b64encode(buf.read())
+    uri=urllib.parse.quote(string)
+    plt.close()
+    return uri,pl,ngl
+
+def generatewordcloud(pl,is_positive):
+    p=[]
+    sentimentanalyzer=SentimentIntensityAnalyzer()
+    for i in pl:
+        a=i.processed_answer.split()
+        for j in a:
+            if((sentimentanalyzer.polarity_scores(j))['compound']>0.3 and is_positive):
+                p.append(j)
+            elif((sentimentanalyzer.polarity_scores(j))['compound']<0 and is_positive==False):
+                p.append(j)
+    p1=" ".join(p)
+    wordcloud = WordCloud(background_color='white',
+    max_words=200,max_font_size=80,random_state=42).generate(p1)
+    if is_positive==False:
+        wordcloud.recolor(color_func = grey_color_func)
+    plt.figure()
+    plt.tight_layout()
+    fig=plt.imshow(wordcloud)
+    plt.axis('off')
+    fig2=plt.gcf()
+    buf2=io.BytesIO()
+    fig2.savefig(buf2, format="png")
+    buf2.seek(0)
+    string2=base64.b64encode(buf2.read())
+    uri2=urllib.parse.quote(string2)
+    #urilist2.append(uri2)
+    plt.close()
+    return uri2
+def generatebar(p,nt,ng,subjects):
+    ind = np.arange(len(subjects))    # the x locations for the groups
+    width = 0.35       # the width of the bars: can also be len(x) sequence
+    #print(ind)
+    p1 = plt.barh(ind, p, width,color='g')
+    p2 = plt.barh(ind, nt, width,left=p,color='y')
+    p3 = plt.barh(ind, ng, width,left=np.array(p)+np.array(nt),color='r')
+    
+    plt.xlabel('Feedback Scores')
+    plt.title('Scores by sentiment')
+    plt.tight_layout()
+    
+    plt.yticks(ind, subjects)
+    plt.xticks(np.arange(0, 100, 10))
+    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
+    #l2=plt.legend(yl, fqlist,loc='best')
+    plt.gca().add_artist(l1)
+    #plt.gca().add_artist(l2)
+    fig4=plt.gcf()
+    buf4=io.BytesIO()
+    fig4.savefig(buf4, format="png")
+    buf4.seek(0)
+    string4=base64.b64encode(buf4.read())
+    uri4=urllib.parse.quote(string4)
+    plt.close()
+    return uri4
+
+@login_required
+@teacher_only
+def profreport(request,sid):
+    s=Subject.objects.get(id=sid)
+    uri,pl,ngl=generatepie(s,"prof")
+    urip=generatewordcloud(pl,True)
+    urin=generatewordcloud(ngl,False)
+    s=Subject.objects.filter(teacher=request.user)
+    subli=[]
+    pl=[]
+    ntl=[]
+    ngl=[]
+    for si in s:
+        subli.append(si.subject_name+"-"+str(si.year))
+        p,nt,ng=findnumber(si,'prof')
+        print(p," ",nt," ",ng)
+        pl.append(p)
+        ngl.append(ng)
+        ntl.append(nt)
+    print(pl)
+    print(ntl)
+    print(ngl)
+    uri3=generatebar(pl,ntl,ngl,subli)
+    all_s=Subject.objects.filter(teacher=request.user)
+    set_subjs=set()
+    for si in all_s:
+        set_subjs.add(si.subject_name)
+    s_to_print=[]
+    for s in set_subjs:
+        #s=Subject.objects.get(id=sid)
+        other_s=Subject.objects.filter(subject_name=s).order_by('year')
+        li=[]
+        time_array=[]
+        
+        for si in other_s:
+            summ=0
+            sume=0
+            te=0
+            tm=0
+            fm=si.feedbackform_set.all().filter(Q(sem_type="midsem") & Q(feedback_type="course"))
+            fe=si.feedbackform_set.all().filter(Q(sem_type="endsem") & Q(feedback_type="course"))
+            fa=FormAnswer.objects.all()
+            for fai in fa:
+                if fai.form_question.feedback_form in fm:
+                    summ+=fai.sentiment
+                    tm+=1
+                elif fai.form_question.feedback_form in fe:
+                    sume+=fai.sentiment
+                    te+=1
+            time_array.append("MSE"+" "+str(si.year))
+            time_array.append("ESE"+" "+str(si.year))
+            sm=summ/tm*100
+            se=sume/te*100
+            li.append(sm)
+            li.append(se)
+        plt.plot(time_array,li)
+        s_to_print.append(s)
+    plt.legend(s_to_print,loc="lower right")
+    #print("SUbject name is ",s.subject_name)
+    
+    plt.tight_layout()
+ 
+    fig4=plt.gcf()
+    buf4=io.BytesIO()
+    fig4.savefig(buf4, format="png")
+    buf4.seek(0)
+    string4=base64.b64encode(buf4.read())
+    uri4=urllib.parse.quote(string4)
+    plt.xlabel('Time')
+    plt.ylabel('Sentiment score')
+    plt.close()
+    return render(request, 'courses/profreport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4})
+
+@login_required
+@teacher_only
+def coursereport(request,sid):
+    s=Subject.objects.get(id=sid)
+    uri,pl,ngl=generatepie(s,"course")
+    urip=generatewordcloud(pl,True)
+    urin=generatewordcloud(ngl,False)
+    s=Subject.objects.filter(teacher=request.user)
+    subli=[]
+    pl=[]
+    ntl=[]
+    ngl=[]
+    for si in s:
+        subli.append(si.subject_name+"-"+str(si.year))
+        p,nt,ng=findnumber(si,'course')
+        #print(p," ",nt," ",ng)
+        pl.append(p)
+        ngl.append(ng)
+        ntl.append(nt)
+    uri3=generatebar(pl,ntl,ngl,subli)
+    s=Subject.objects.get(id=sid)
+    other_s=Subject.objects.filter(subject_name=s.subject_name).order_by('year')
+    li=[]
+    time_array=[]
+    for si in other_s:
+        summ=0
+        sume=0
+        te=0
+        tm=0
+        fm=si.feedbackform_set.all().filter(Q(sem_type="midsem") & Q(feedback_type="course"))
+        fe=si.feedbackform_set.all().filter(Q(sem_type="endsem") & Q(feedback_type="course"))
+        fa=FormAnswer.objects.all()
+        for fai in fa:
+            if fai.form_question.feedback_form in fm:
+                summ+=fai.sentiment
+                tm+=1
+            elif fai.form_question.feedback_form in fe:
+                sume+=fai.sentiment
+                te+=1
+        time_array.append("MSE"+" "+str(si.year))
+        time_array.append("ESE"+" "+str(si.year))
+        sm=summ/tm*100
+        se=sume/te*100
+        li.append(sm)
+        li.append(se)
+    plt.plot(time_array,li)
+    s_to_print=s.subject_name
+    plt.legend(s_to_print,loc="lower right")
+    print("SUbject name is ",s.subject_name)
+    plt.xlabel('Time')
+    plt.ylabel('Sentiment score')
+    #plt.title('Scores by sentiment')
+    plt.tight_layout()
+    
+    #plt.yticks(ind, subjects)
+    #plt.xticks(np.arange(0, 100, 10))
+    #l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
+    #l2=plt.legend(yl, fqlist,loc='best')
+    #plt.gca().add_artist(l1)
+    #plt.gca().add_artist(l2)
+    fig4=plt.gcf()
+    buf4=io.BytesIO()
+    fig4.savefig(buf4, format="png")
+    buf4.seek(0)
+    string4=base64.b64encode(buf4.read())
+    uri4=urllib.parse.quote(string4)
+    plt.close()
+    return render(request, 'courses/coursereport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4})
+
+
 @login_required
 @teacher_only
 def newform(request,sid):
@@ -190,7 +443,9 @@ def grey_color_func(word, font_size, position,orientation,random_state=None, **k
 @teacher_only
 def formreport(request,sid,fid):
     fa=FormAnswer.objects.all()
-    p=ng=nt=0
+    p=0
+    ng=0
+    nt=0
     fi=FeedbackForm.objects.get(id=fid)
     fq=fi.formquestion_set.first()
     pl=ngl=ntl={}
@@ -336,7 +591,7 @@ def formreport(request,sid,fid):
         yl.append("Q"+str(i+1))
         finalkey.append("Q"+str(i+1)+"-"+fqlist[i])
     plt.yticks(ind, yl)
-    plt.xticks(np.arange(0, 20, 4))
+    plt.xticks(np.arange(0, 21, 2))
     l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
     #l2=plt.legend(yl, fqlist,loc='best')
     plt.gca().add_artist(l1)
@@ -349,9 +604,9 @@ def formreport(request,sid,fid):
     uri4=urllib.parse.quote(string4)
     #urilist4.append(uri4)
     plt.close()
-
+    urilistzip=zip(finalkey,urilist)
     #plt.show()
-    return render(request,'courses/formreport.html',{'data': uri,'l2':len(urilist2),'l3':len(urilist3),'urilist':urilist,'uri4':uri4,'finalkey':finalkey})
+    return render(request,'courses/formreport.html',{'fi':fi,'data': uri,'l2':len(urilist2),'l3':len(urilist3),'urilist':urilist,'uri4':uri4,'finalkey':finalkey,'urilistzip':urilistzip})
     #return render(request,'courses/test.html')
 
 

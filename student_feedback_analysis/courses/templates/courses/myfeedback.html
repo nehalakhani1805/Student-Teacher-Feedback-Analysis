@@ -1,8 +1,8 @@
 {% extends "users/base.html" %}
 {% block content %}  
 
-<a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">Cumulative report - Course</a>
-<a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">Cumulative report - Professor</a>
+<a class="btn btn-outline-info" href ="{% url 'coursereport' s.id %}" style="float: right;margin-left:20px;">Cumulative report - Course</a>
+<a class="btn btn-outline-info" href ="{% url 'profreport' s.id %}" style="float: right;margin-left:20px;">Cumulative report - Professor</a>
 <a class="btn btn-outline-info" href ="{% url 'newform' s.id %}" style="float: right;margin-left:20px;">Create new form</a>
 <br><br>
     <h2>My Forms</h2>
