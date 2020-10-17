@@ -193,21 +193,45 @@ def formreport(request,sid,fid):
     p=ng=nt=0
     fi=FeedbackForm.objects.get(id=fid)
     fq=fi.formquestion_set.first()
-    pl=ngl=ntl=[]
-
+    pl=ngl=ntl={}
+    numbers={}
     #pie chart
     for fai in fa:
-        if fai.form_question.id == fq.id:
+        if fai.form_question.feedback_form.id == fid:
             
             if fai.sentiment > 0.3:
                 p+=1
-                pl.append(fai)
+                if fai.form_question.question not in pl:
+                    pl[fai.form_question.question]=[fai]
+                else:
+                    pl[fai.form_question.question].append(fai)
+                if fai.form_question.question not in numbers:
+                    numbers[fai.form_question.question]=[1,0,0]
+                else:
+                    numbers[fai.form_question.question][0]+=1
             elif 0.1<fai.sentiment<=0.3:
                 nt+=1
-                ntl.append(fai)
+                if fai.form_question.question not in pl:
+                    pl[fai.form_question.question]=[fai]
+                else:
+                    pl[fai.form_question.question].append(fai)
+                if fai.form_question.question not in numbers:
+                    numbers[fai.form_question.question]=[0,1,0]
+                else:
+                    numbers[fai.form_question.question][1]+=1
             else:
                 ng+=1
-                ngl.append(fai)
+                if fai.form_question.question not in pl:
+                    pl[fai.form_question.question]=[fai]
+                else:
+                    pl[fai.form_question.question].append(fai)
+                if fai.form_question.question not in numbers:
+                    numbers[fai.form_question.question]=[0,0,1]
+                else:
+                    numbers[fai.form_question.question][2]+=1
+    print("hi")
+    print(len(pl.keys()))
+    print(len(ngl.keys()))
     labels = 'Positive', 'Neutral', 'Negative'
     sizes = [p,nt,ng]
     colors = ['gold', 'lightcoral','yellowgreen']
@@ -226,52 +250,110 @@ def formreport(request,sid,fid):
     string=base64.b64encode(buf.read())
     uri=urllib.parse.quote(string)
     plt.close()
-
+    
     #positive wordcloud
-    p=[]
-    sentimentanalyzer=SentimentIntensityAnalyzer()
-    for i in pl:
-        a=i.processed_answer.split()
-        for j in a:
-            if((sentimentanalyzer.polarity_scores(j))['compound']>0.3):
-                p.append(j)
-    p1=" ".join(p)
-    wordcloud = WordCloud(background_color='white',
-    max_words=200,max_font_size=80,random_state=42).generate(p1)
-    plt.figure()
-    fig=plt.imshow(wordcloud)
-    plt.axis('off')
-    fig2=plt.gcf()
-    buf2=io.BytesIO()
-    fig2.savefig(buf2, format="png")
-    buf2.seek(0)
-    string2=base64.b64encode(buf2.read())
-    uri2=urllib.parse.quote(string2)
-    plt.close()
+    urilist2=[]
+    for pli in pl:
+        p=[]
+        sentimentanalyzer=SentimentIntensityAnalyzer()
+        for i in pl[pli]:
+            a=i.processed_answer.split()
+            for j in a:
+                if((sentimentanalyzer.polarity_scores(j))['compound']>0.3):
+                    p.append(j)
+        p1=" ".join(p)
+        wordcloud = WordCloud(background_color='white',
+        max_words=200,max_font_size=80,random_state=42).generate(p1)
+        plt.figure()
+        fig=plt.imshow(wordcloud)
+        plt.axis('off')
+        fig2=plt.gcf()
+        buf2=io.BytesIO()
+        fig2.savefig(buf2, format="png")
+        buf2.seek(0)
+        string2=base64.b64encode(buf2.read())
+        uri2=urllib.parse.quote(string2)
+        urilist2.append(uri2)
+        plt.close()
 
     #negative wordcloud
-    p=[]
-    for i in ngl:
-        a=i.processed_answer.split()
-        for j in a:
-            if((sentimentanalyzer.polarity_scores(j))['compound']<0.0):
-                p.append(j)
-    p1=" ".join(p)
-    wordcloud = WordCloud(background_color='white',
-    max_words=20,max_font_size=80,random_state=42).generate(p1)
-    wordcloud.recolor(color_func = grey_color_func)
-    plt.figure()
-    fig=plt.imshow(wordcloud)
-    plt.axis('off')
-    fig3=plt.gcf()
-    buf3=io.BytesIO()
-    fig3.savefig(buf3, format="png")
-    buf3.seek(0)
-    string3=base64.b64encode(buf3.read())
-    uri3=urllib.parse.quote(string3)
+    urilist3=[]
+    for ngli in ngl:
+        p=[]
+        for i in ngl[ngli]:
+            a=i.processed_answer.split()
+            for j in a:
+                if((sentimentanalyzer.polarity_scores(j))['compound']<0.0):
+                    p.append(j)
+        p1=" ".join(p)
+        wordcloud = WordCloud(background_color='white',
+        max_words=20,max_font_size=80,random_state=42).generate(p1)
+        wordcloud.recolor(color_func = grey_color_func)
+        plt.figure()
+        fig=plt.imshow(wordcloud)
+        plt.axis('off')
+        fig3=plt.gcf()
+        buf3=io.BytesIO()
+        fig3.savefig(buf3, format="png")
+        buf3.seek(0)
+        string3=base64.b64encode(buf3.read())
+        uri3=urllib.parse.quote(string3)
+        urilist3.append(uri3)
+        plt.close()
+        diction={'positive':urilist2,'negative':urilist3}
+        #diction['positive']
+        urilist=[]
+        for i in range(len(urilist3)):
+            li=[]
+            li.append(urilist2[i])
+            li.append(urilist3[i])
+            urilist.append(li)
+
+    #horizontal stacked bar graph
+    p=[x[0] for x in numbers.values()]
+    nt=[x[1] for x in numbers.values()]
+    ng=[x[2] for x in numbers.values()] 
+    print(numbers)   
+    print(p)
+    ind = np.arange(len(urilist3))    # the x locations for the groups
+    width = 0.35       # the width of the bars: can also be len(x) sequence
+    #print(ind)
+    p1 = plt.barh(ind, p, width,color='g')
+    p2 = plt.barh(ind, nt, width,left=p,color='y')
+    p3 = plt.barh(ind, ng, width,left=np.array(p)+np.array(nt),color='r')
+    
+    plt.xlabel('Feedback Scores')
+    plt.title('Scores by sentiment')
+    plt.tight_layout()
+    f=FeedbackForm.objects.get(id=fid)
+    fq=f.formquestion_set.all()
+    fqlist=[]
+    for fqi in fq:
+        fqlist.append(fqi.question)
+    yl=[]
+    finalkey=[]
+    for i in range(len(urilist3)):
+        yl.append("Q"+str(i+1))
+        finalkey.append("Q"+str(i+1)+"-"+fqlist[i])
+    plt.yticks(ind, yl)
+    plt.xticks(np.arange(0, 20, 4))
+    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
+    #l2=plt.legend(yl, fqlist,loc='best')
+    plt.gca().add_artist(l1)
+    #plt.gca().add_artist(l2)
+    fig4=plt.gcf()
+    buf4=io.BytesIO()
+    fig4.savefig(buf4, format="png")
+    buf4.seek(0)
+    string4=base64.b64encode(buf4.read())
+    uri4=urllib.parse.quote(string4)
+    #urilist4.append(uri4)
     plt.close()
-    return render(request,'courses/formreport.html',{'data': uri,'data2':uri2,'data3':uri3})
+
+    #plt.show()
+    return render(request,'courses/formreport.html',{'data': uri,'l2':len(urilist2),'l3':len(urilist3),'urilist':urilist,'uri4':uri4,'finalkey':finalkey})
     #return render(request,'courses/test.html')
+
 
 
 

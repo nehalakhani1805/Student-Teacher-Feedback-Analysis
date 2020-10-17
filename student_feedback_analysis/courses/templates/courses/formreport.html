@@ -1,9 +1,27 @@
 {% extends "users/base.html" %}
 {% block content %}
-    <h1>Hi</h1>
+    <h1>Hi {{ l2 }} {{ l3 }}</h1>
     <img src="data: image/png;base64,{{ data }}">
+
     <h1>Hi</h1>
-    <img src="data: image/png;base64,{{ data2 }}">
-    <h1>Hi</h1>
-    <img src="data: image/png;base64,{{ data3 }}">
+    <div>
+    {% for uril in urilist %}
+    {% for uri in uril %}
+    <img src="data: image/png;base64,{{ uri }}" height ='400px',width='400px',style="float:left;">
+    {% endfor %}
+    <h3>HI</h3>
+    {% endfor %}
+    </div>
+    <br><br>
+    <div style = "float:right;">
+        
+        {% for f in finalkey %}
+        <h4>{{ f }}</h4>
+    {% endfor %}
+    
+    </div>
+    <img src="data: image/png;base64,{{ uri4 }}"width="50%" height="20%">
+    
+    
+    
 {% endblock content %}
