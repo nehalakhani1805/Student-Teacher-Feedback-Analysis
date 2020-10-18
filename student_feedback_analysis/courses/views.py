@@ -254,6 +254,7 @@ def generatebar(p,nt,ng,subjects):
     p3 = plt.barh(ind, ng, width,left=np.array(p)+np.array(nt),color='r')
     
     plt.xlabel('Feedback Scores')
+    plt.ylabel('Courses taught by you')
     plt.title('Scores by sentiment')
     plt.tight_layout()
     
@@ -333,17 +334,17 @@ def profreport(request,sid):
     #print("SUbject name is ",s.subject_name)
     
     plt.tight_layout()
- 
+    plt.xlabel('Time')
+    plt.ylabel('Sentiment score')
     fig4=plt.gcf()
     buf4=io.BytesIO()
     fig4.savefig(buf4, format="png")
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
-    plt.xlabel('Time')
-    plt.ylabel('Sentiment score')
+    
     plt.close()
-    return render(request, 'courses/profreport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4})
+    return render(request, 'courses/profreport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid)})
 
 @login_required
 @teacher_only
@@ -398,13 +399,6 @@ def coursereport(request,sid):
     plt.ylabel('Sentiment score')
     #plt.title('Scores by sentiment')
     plt.tight_layout()
-    
-    #plt.yticks(ind, subjects)
-    #plt.xticks(np.arange(0, 100, 10))
-    #l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
-    #l2=plt.legend(yl, fqlist,loc='best')
-    #plt.gca().add_artist(l1)
-    #plt.gca().add_artist(l2)
     fig4=plt.gcf()
     buf4=io.BytesIO()
     fig4.savefig(buf4, format="png")
@@ -412,7 +406,7 @@ def coursereport(request,sid):
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
     plt.close()
-    return render(request, 'courses/coursereport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4})
+    return render(request, 'courses/coursereport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid)})
 
 
 @login_required
