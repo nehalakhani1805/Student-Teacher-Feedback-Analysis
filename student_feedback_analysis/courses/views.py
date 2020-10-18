@@ -25,6 +25,11 @@ import urllib,base64
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 from django.db.models import Q
+from skills.models import Skill, SkillQuestion, SkillAnswer
+import datetime
+import waterfall_chart
+
+
 # Create your views here.
 @login_required
 @student_only
@@ -152,7 +157,92 @@ def studentfeedback(request, sid, uid):
     else:
         form=StudentFeedbackForm()
     #return render(request, 'users/profile.html',{'form':form})
-    return render(request, 'courses/studentform.html',{'u':u,'form':form})
+    return render(request, 'courses/studentform.html',{'u':u,'form':form, 'sid' : sid})
+
+@login_required
+def studentreport(request, sid, uid):
+    # sa = SkillAnswer.objects.all()
+    taggedWords = []
+    pos = []
+    neg = []
+    s = User.objects.get(id = uid)
+    for ans in SkillAnswer.objects.filter(student = s):#filter(date.year == datetime.date.today().year):
+        if (ans.date.year == datetime.date.today().year):
+            temp = ans.tags.split(',')
+            for t in temp:
+                taggedWords.append(t)
+        
+    sentimentanalyzer=SentimentIntensityAnalyzer()
+    # print(taggedWords)
+    for j in taggedWords:
+        if((sentimentanalyzer.polarity_scores(j))['compound']>0.3):
+            pos.append(j)
+        if((sentimentanalyzer.polarity_scores(j))['compound']<0.0):
+            neg.append(j)
+    pl = ' '.join(pos)
+    nl = ' '.join(neg)
+
+    #positive wc
+    wordcloud = WordCloud(background_color='white',
+    max_words=200,max_font_size=80,random_state=42).generate(pl)
+    plt.figure()
+    plt.tight_layout()
+    fig=plt.imshow(wordcloud)
+    plt.axis('off')
+    fig2=plt.gcf()
+    buf2=io.BytesIO()
+    fig2.savefig(buf2, format="png")
+    buf2.seek(0)
+    string2=base64.b64encode(buf2.read())
+    uri2=urllib.parse.quote(string2)
+    #urilist2.append(uri2)
+    plt.close()
+
+    #negative wc
+    wordcloud = WordCloud(background_color='white',
+    max_words=200,max_font_size=80,random_state=42).generate(nl)
+    wordcloud.recolor(color_func = grey_color_func)
+    plt.figure()
+    plt.tight_layout()
+    fig=plt.imshow(wordcloud)
+    plt.axis('off')
+    fig3=plt.gcf()
+    buf3=io.BytesIO()
+    fig3.savefig(buf3, format="png")
+    buf3.seek(0)
+    string3=base64.b64encode(buf3.read())
+    uri3=urllib.parse.quote(string3)
+    plt.close()
+
+
+    s = User.objects.get(id = uid)
+    dictY = {}
+    a = [2018, 2019, 2020]
+    b = [0, 0, 0]
+    sa = SkillAnswer.objects.filter(student = s).order_by('date')
+    for ans in sa:
+        if ans.date.year in dictY:
+            dictY[ans.date.year] += ans.sentiment
+        else:
+            dictY[ans.date.year] = ans.sentiment
+    # for ans in sa:
+        # b[ans.date.year - 2018] += ans.sentiment
+
+    # print(b)
+    # print(a)
+    a = list(dictY.values())
+    b = [int(x) for x in list(dictY.keys())]
+    buf=io.BytesIO()
+    fig = waterfall_chart.plot(a, b).savefig(buf, format="png")
+    
+    buf.seek(0)
+    string=base64.b64encode(buf.read())
+    uri4=urllib.parse.quote(string)
+    # tempVar.close()
+    return render(request, 'courses/studentreport.html', { 'uri2' : uri2, 'uri3' : uri3, 'uri4' : uri4 })
+
+
+
 
 @login_required
 @teacher_only

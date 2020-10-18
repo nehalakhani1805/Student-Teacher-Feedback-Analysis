@@ -22,8 +22,8 @@ class SkillAnswer(models.Model):
     yes_or_no = models.BooleanField(default=True)
     student = models.ForeignKey(User,on_delete=models.CASCADE)
     answer = models.TextField(max_length=225)
-    date=models.DateTimeField(default=timezone.now)
-    processed_answer = models.TextField(default = "heyy")
+    date = models.DateTimeField(default=timezone.now)
+    tags = models.TextField(default = "heyy")
     sentiment = models.FloatField(default=0.0)
     #tags = models.TextField(default = "good")
 

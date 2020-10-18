@@ -1,0 +1,13 @@
+{% extends "users/base.html" %}
+{% block content %}  
+    <h1>HI</h1>
+    <h1>{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</h1><br><br>
+    <h2>General Sentiment Ratio</h2>
+    <img src="data: image/png;base64,{{ uri2 }}"><br><br>
+
+    <h2>General Sentiment Ratio</h2>
+    <img src="data: image/png;base64,{{ uri3 }}"><br><br>
+
+    <h2>General Sentiment Ratio</h2>
+    <img src="data: image/png;base64,{{ uri4 }}"><br><br>
+{% endblock content %}

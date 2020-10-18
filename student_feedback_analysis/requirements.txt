@@ -22,4 +22,5 @@ sklearn==0.0
 sqlparse==0.4.1
 threadpoolctl==2.1.0
 tqdm==4.50.2
+waterfallcharts==3.8
 wordcloud==1.8.0

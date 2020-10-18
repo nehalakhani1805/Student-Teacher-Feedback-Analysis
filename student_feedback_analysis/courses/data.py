@@ -1,5 +1,5 @@
 from .models import Subject,FeedbackForm,FormAnswer,FormQuestion
-from skills.models import SkillAnswer
+from skills.models import SkillAnswer, SkillQuestion, Skill
 from django.contrib.auth.models import User
 import datetime
 import pandas as pd
@@ -117,15 +117,49 @@ def trying4():
 
 
 def trying5():
+    print('in t5')
     sa=SkillAnswer.objects.all()
     lemmatizer = WordNetLemmatizer()
     #i=1000
-    for f in sa:       
-        
+    for f in sa:              
         #using vader classfiers
-        f.processed_answer = end
         sid=SentimentIntensityAnalyzer()
         ss=sid.polarity_scores(f.answer)
         f.sentiment=ss['compound']
         f.save()
+    #tf - idf
+    # skillArr = [x for x in Skill.objects.all()]
+    # for i in Skill.objects.all():
+    #     for q in SkillQuestion.objects.filter(skill = i):
+    #         docs = []
+    #         for ans in SkillAnswer.objects.filter(question = q):
+    #             docs.append(ans.answer)
+    #         # print(docs)
+    #         cv = CountVectorizer()
+    #         word_count_vec = cv.fit_transform(docs)
+    #         tfidf_transformer = TfidfTransformer(smooth_idf=True,use_idf=True) 
+    #         tfidf_transformer.fit(word_count_vec)
+    #         count_vec = cv.transform(docs)
+    #         tf_idf_vec = tfidf_transformer.transform(count_vec)
+    #         feature_names = cv.get_feature_names() 
+    #         first_document_vector = tf_idf_vec[0] 
+    #         # doc_mat = tf_idf_vec[0]
+    #         df = pd.DataFrame(first_document_vector.T.todense(), index=feature_names, columns=["tfidf"]) 
+    #         df.sort_values(by = ["tfidf"], ascending = False, inplace = True)
+    #         for ans in SkillAnswer.objects.filter(question = q):
+    #             ii = 0
+    #             nl = []
+    #             for word in df.index:
+    #                 if word not in set(stopwords.words('english')):
+    #                     ii += 1
+    #                     nl.append(word)
+    #                 if ii >= 2:
+    #                     break
+    #             ans.processed_answer = ' '.join(nl)
+    #             ans.save()
 
+
+            
+
+
+    
