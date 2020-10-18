@@ -17,7 +17,8 @@ import re
 import matplotlib.pyplot as plt
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
-
+from sklearn.feature_extraction.text import TfidfTransformer 
+from sklearn.feature_extraction.text import CountVectorizer 
 
 
 
@@ -119,38 +120,12 @@ def trying5():
     sa=SkillAnswer.objects.all()
     lemmatizer = WordNetLemmatizer()
     #i=1000
-    for f in sa:  
+    for f in sa:       
         
-        # i+=1
-        #remove punctuation
-        tokenizer = RegexpTokenizer(r'\w+')
-        tokens = tokenizer.tokenize(f.answer)
-        final=' '.join(tokens)
-
-
-        #remove non english words
-        a1=" ".join(w for w in nltk.wordpunct_tokenize(final)if w.lower() in words or not w.isalpha())
-
-        #remove proper nouns
-        tokenized2 = nltk.word_tokenize(a1)
-        tokenized=[lemmatizer.lemmatize(w) for w in tokenized2]
-        temp=' '.join(tokenized)
-        #tokenized=[ps.stem(w) for w in tokenized3]
-        pos=nltk.tag.pos_tag(tokenized)
-        ed=[word for word,tag in pos if tag!='NNP' and tag!='NNPs']#removing proper nouns
-        end=' '.join(ed)
-
-        #remove stop words
-        # en=[i for i in word_tokenize(end.lower()) if i not in stop] 
-        # final=' '.join(en)
-
         #using vader classfiers
         f.processed_answer = end
         sid=SentimentIntensityAnalyzer()
-        ss=sid.polarity_scores(f.processed_answer)
+        ss=sid.polarity_scores(f.answer)
         f.sentiment=ss['compound']
-        #f.processed_answer=final
         f.save()
-    # else:
-    #     break
 
