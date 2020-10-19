@@ -1,6 +1,6 @@
 from django import forms
 from django.db import models
-from .models import Subject, FeedbackForm, FormQuestion
+from .models import Subject, FeedbackForm, FormQuestion, DraftForm
 from skills.models import SkillAnswer
 class FormFeedback(forms.Form):
     #username = forms.CharField(max_length=30)
@@ -31,14 +31,14 @@ class StudentFeedbackForm(forms.ModelForm):
     #required is set to true, you can set it to false if you want
     class Meta:
         model=SkillAnswer
-        fields=['question','yes_or_no','answer']
+        fields=['question','yes_or_no','answer','tags']
 
 
 class NewForm(forms.ModelForm):
     #enrollment_key=forms.CharField(widget=forms.PasswordInput)
     #required is set to true, you can set it to false if you want
     class Meta:
-        model=FeedbackForm
+        model=DraftForm
         fields=['form_name','feedback_type','sem_type']
 class NewQuestionForm(forms.ModelForm):
     #enrollment_key=forms.CharField(widget=forms.PasswordInput)

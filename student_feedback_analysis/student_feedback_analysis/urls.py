@@ -40,6 +40,10 @@ urlpatterns = [
     path('subjectdetail/<int:sid>/myfeedback/<int:fid>/formreport/',courses_views.formreport,name='formreport'),
     path('subjectdetail/<int:sid>/myfeedback/<int:fid>/deleteform/',courses_views.deleteform,name='deleteform'),
     path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/',courses_views.editform,name='editform'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/upload/',courses_views.upload,name='upload'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/deletedraft/',courses_views.deletedraft,name='deletedraft'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/formreport/',courses_views.formreport,name='formreport'),
+    path('subjectdetail/<int:sid>/myfeedback/<int:fid>/formreport/',courses_views.formreport,name='formreport'),
     path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/<int:fqid>/deletequestion/',courses_views.deletequestion,name='deletequestion'),
     path('subjectdetail/<int:sid>/myfeedback/<int:fid>/editform/<int:fqid>/editquestion/',courses_views.editquestion,name='editquestion'),
 ]

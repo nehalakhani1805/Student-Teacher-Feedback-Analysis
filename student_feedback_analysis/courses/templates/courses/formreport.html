@@ -2,23 +2,24 @@
 {% block content %}
     <h1>{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</h1><br><br>
     <h2>General Sentiment Ratio</h2>
-    <img src="data: image/png;base64,{{ data }}"><br><br>
+    <br><br>
+    <img src="data: image/png;base64,{{ data }}"><br><br><br><br>
 
-    <h2>Wordclouds Positive VS Negative</h2>
+    <h2>Wordclouds Positive VS Negative</h2><br>
     <div>
     {% for uril,uril2 in urilistzip %}
-    <br><br>
-    <h3>{{ uril }}</h3>
-    <br>
-    {% for uri in uril2 %}
-    <img src="data: image/png;base64,{{ uri }}" height ='400px',width='400px',style="float:left;">
-    {% endfor %}
     
+    <h3>{{ uril }}</h3>
+    <br><br>
+    {% for uri in uril2 %}
+    <img src="data: image/png;base64,{{ uri }}" height ='230px',width='230px',style="float:left;">
+    {% endfor %}
+    <br><br><br>
     {% endfor %}
     </div>
-    <br><br>
+    <br><br><br>
     <h2>Question Wise Sentiments</h2>
-    
+    <br><br>
     <div style = "float:right;">
         <br>
         <h3>Key:</h3>

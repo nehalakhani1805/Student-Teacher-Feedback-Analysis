@@ -23,7 +23,7 @@ class SkillAnswer(models.Model):
     student = models.ForeignKey(User,on_delete=models.CASCADE)
     answer = models.TextField(max_length=225)
     date = models.DateTimeField(default=timezone.now)
-    tags = models.TextField(default = "heyy")
+    tags = models.TextField(default = "disciplined")
     sentiment = models.FloatField(default=0.0)
     #tags = models.TextField(default = "good")
 

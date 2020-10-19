@@ -13,5 +13,14 @@
     
     <h3><a class="article-title" href="#">{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</a></h3>
     {% endfor %}
+    <br>
+    <h2>Drafts</h2>
+    {% for fi in d %}
+    <a class="btn btn-outline-info" href ="{% url 'upload' s.id fi.id %}" style="float: right;margin-left:20px;">Upload</a>
+    <a class="btn btn-outline-danger" href ="{% url 'deletedraft' s.id fi.id %}" style="float: right;margin-left:20px;">Delete this form</a>
+<a class="btn btn-outline-info" href ="#" style="float: right;margin-left:20px;">Edit this form</a>
+    
+    <h3><a class="article-title" href="#">{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</a></h3>
+    {% endfor %}
     
 {% endblock content %}

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import Subject, FeedbackForm, FormAnswer, FormQuestion, Enroll
 from users.decorators import unauthenticated_user, student_only, teacher_only
 from django.contrib.auth.decorators import login_required
-from .forms import FormFeedback, EnrollForm, StudentFeedbackForm, NewForm, NewQuestionForm, EditQuestionForm
+from .forms import FormFeedback, EnrollForm, StudentFeedbackForm, NewForm, NewQuestionForm, EditQuestionForm, DraftForm
 from django.contrib import messages
 import pandas as pd
 import nltk
@@ -153,7 +153,8 @@ def studentfeedback(request, sid, uid):
             obj.save()
             print(form.cleaned_data.get('question'))
             messages.success(request,f'Your response has been recorded!')
-            return render(request, 'courses/studentform.html',{'uid':uid,'form':form})
+            #return render(request, 'courses/studentform.html',{'u':u,'form':form, 'sid' : sid})
+            return redirect('student-feedback',sid=sid, uid=u.id)
     else:
         form=StudentFeedbackForm()
     #return render(request, 'users/profile.html',{'form':form})
@@ -191,7 +192,7 @@ def studentreport(request, sid, uid):
     plt.axis('off')
     fig2=plt.gcf()
     buf2=io.BytesIO()
-    fig2.savefig(buf2, format="png")
+    fig2.savefig(buf2, format="png",bbox_inches='tight')
     buf2.seek(0)
     string2=base64.b64encode(buf2.read())
     uri2=urllib.parse.quote(string2)
@@ -208,7 +209,7 @@ def studentreport(request, sid, uid):
     plt.axis('off')
     fig3=plt.gcf()
     buf3=io.BytesIO()
-    fig3.savefig(buf3, format="png")
+    fig3.savefig(buf3, format="png",bbox_inches='tight')
     buf3.seek(0)
     string3=base64.b64encode(buf3.read())
     uri3=urllib.parse.quote(string3)
@@ -217,29 +218,107 @@ def studentreport(request, sid, uid):
 
     s = User.objects.get(id = uid)
     dictY = {}
-    a = [2018, 2019, 2020]
-    b = [0, 0, 0]
     sa = SkillAnswer.objects.filter(student = s).order_by('date')
     for ans in sa:
         if ans.date.year in dictY:
             dictY[ans.date.year] += ans.sentiment
         else:
             dictY[ans.date.year] = ans.sentiment
-    # for ans in sa:
-        # b[ans.date.year - 2018] += ans.sentiment
-
-    # print(b)
-    # print(a)
     a = list(dictY.values())
-    b = [int(x) for x in list(dictY.keys())]
+    #a[0]=1.5
+    for i in range(1,len(a)):
+        a[i]=a[i]-a[i-1]
+
+    b = [float(x) for x in list(dictY.keys())]
+    #a=[0,1,2]
+    print(a)
+    print(b)
     buf=io.BytesIO()
-    fig = waterfall_chart.plot(a, b).savefig(buf, format="png")
-    
+    tempVar=waterfall_chart.plot(b,a).savefig(buf, format="png",bbox_inches='tight')
+    #fig.show()
     buf.seek(0)
     string=base64.b64encode(buf.read())
     uri4=urllib.parse.quote(string)
-    # tempVar.close()
-    return render(request, 'courses/studentreport.html', { 'uri2' : uri2, 'uri3' : uri3, 'uri4' : uri4 })
+    #tempVar.close()
+    plt.close()
+
+
+    #line
+    all_s=Skill.objects.all()
+    student=User.objects.get(id=uid)
+    #set_subjs=set()
+    s_to_print=[]
+    for s in all_s: 
+        diction={}
+        print(s.skill_name)
+        for q in SkillQuestion.objects.filter(skill=s):
+            ans=SkillAnswer.objects.filter(student=student)
+            ans=ans.filter(question=q)
+            #ans=ans.order_by('date')
+            for a in ans:
+                # print(a.question.skill)
+                print(a.answer)
+                print(a.date)
+                #print(" ")
+                if a.date.year not in diction:
+                    diction[a.date.year]=[0.0,0.0,0.0,0.0]
+                if a.date.month <=6:
+                    diction[a.date.year][0]+=a.sentiment
+                    diction[a.date.year][1]+=1
+                else:
+                    diction[a.date.year][2]+=a.sentiment
+                    diction[a.date.year][3]+=1
+
+                # if a.date.month <=6:
+                #     stemp="June" + str(a.date.year)
+                #     if stemp not in diction:
+                #         diction[stemp]=[a.sentiment]
+                #     else:
+                #         diction[stemp].append(a.sentiment)
+                # else:
+                #     stemp="Dec" + str(a.date.year)
+                #     if stemp not in diction:
+                #         diction[stemp]=[a.sentiment]
+                #     else:
+                #         diction[stemp].append(a.sentiment)
+        diction2={}
+        for stemp in sorted(diction):
+            #l=len(diction[stemp])
+            #sumi=0
+            #for i in diction[stemp]:
+            #     sumi+=i
+            # sumi=sumi/l*100
+            # diction2[stemp]=sumi
+            temp="June"+str(stemp)
+            temp2="Dec"+str(stemp)
+            try:
+                diction2[temp]=diction[stemp][0]/diction[stemp][1]
+            except:
+                diction2[temp]=0.0
+            try:
+                diction2[temp2]=diction[stemp][2]/diction[stemp][3]
+            except:
+                diction2[temp2]=0.0
+
+
+        plt.plot(list(diction2.keys()),list(diction2.values()))
+        s_to_print.append(s.skill_name)
+    #print(s.skill_name)
+    plt.legend(s_to_print,loc="lower right")
+    #print("SUbject name is ",s.subject_name)
+    
+    plt.tight_layout()
+    plt.xlabel('Time')
+    plt.ylabel('Sentiment score')
+    fig5=plt.gcf()
+    buf5=io.BytesIO()
+    fig5.savefig(buf5, format="png",bbox_inches='tight')
+    buf5.seek(0)
+    string5=base64.b64encode(buf5.read())
+    uri5=urllib.parse.quote(string5)
+    
+    plt.close()
+    return render(request, 'courses/studentreport.html', { 'uri2' : uri2, 'uri3' : uri3 ,'uri4':uri4,'uri5':uri5})
 
 
 
@@ -249,8 +328,9 @@ def studentreport(request, sid, uid):
 def myfeedback(request,sid):
     s=Subject.objects.get(id=sid)
     f=s.feedbackform_set.all()
+    d=s.draftform_set.all()
 
-    return render(request,'courses/myfeedback.html',{'f':f,'s':s})
+    return render(request,'courses/myfeedback.html',{'f':f,'s':s,'d':d})
 
 def findnumber(s,ft):
     f=FeedbackForm.objects.filter(Q(subject=s) & Q(feedback_type=ft)).all()
@@ -300,7 +380,7 @@ def generatepie(s,feedback_type):
     #plt.show()
     fig=plt.gcf()
     buf=io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format="png",bbox_inches='tight')
     buf.seek(0)
     string=base64.b64encode(buf.read())
     uri=urllib.parse.quote(string)
@@ -328,7 +408,7 @@ def generatewordcloud(pl,is_positive):
     plt.axis('off')
     fig2=plt.gcf()
     buf2=io.BytesIO()
-    fig2.savefig(buf2, format="png")
+    fig2.savefig(buf2, format="png",bbox_inches='tight')
     buf2.seek(0)
     string2=base64.b64encode(buf2.read())
     uri2=urllib.parse.quote(string2)
@@ -349,14 +429,14 @@ def generatebar(p,nt,ng,subjects):
     plt.tight_layout()
     
     plt.yticks(ind, subjects)
-    plt.xticks(np.arange(0, 100, 10))
-    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
+    #plt.xticks(np.arange(0, 100, 10))
+    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'),loc='upper center', bbox_to_anchor=(0.5, -0.15),fancybox=True, shadow=True, ncol=5)
     #l2=plt.legend(yl, fqlist,loc='best')
     plt.gca().add_artist(l1)
     #plt.gca().add_artist(l2)
     fig4=plt.gcf()
     buf4=io.BytesIO()
-    fig4.savefig(buf4, format="png")
+    fig4.savefig(buf4, format="png",bbox_inches='tight')
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
@@ -428,7 +508,7 @@ def profreport(request,sid):
     plt.ylabel('Sentiment score')
     fig4=plt.gcf()
     buf4=io.BytesIO()
-    fig4.savefig(buf4, format="png")
+    fig4.savefig(buf4, format="png",bbox_inches='tight')
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
@@ -491,7 +571,7 @@ def coursereport(request,sid):
     plt.tight_layout()
     fig4=plt.gcf()
     buf4=io.BytesIO()
-    fig4.savefig(buf4, format="png")
+    fig4.savefig(buf4, format="png",bbox_inches='tight')
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
@@ -584,7 +664,7 @@ def formreport(request,sid,fid):
     #plt.show()
     fig=plt.gcf()
     buf=io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format="png",bbox_inches='tight')
     buf.seek(0)
     string=base64.b64encode(buf.read())
     uri=urllib.parse.quote(string)
@@ -608,7 +688,7 @@ def formreport(request,sid,fid):
         plt.axis('off')
         fig2=plt.gcf()
         buf2=io.BytesIO()
-        fig2.savefig(buf2, format="png")
+        fig2.savefig(buf2, format="png",bbox_inches='tight')
         buf2.seek(0)
         string2=base64.b64encode(buf2.read())
         uri2=urllib.parse.quote(string2)
@@ -633,7 +713,7 @@ def formreport(request,sid,fid):
         plt.axis('off')
         fig3=plt.gcf()
         buf3=io.BytesIO()
-        fig3.savefig(buf3, format="png")
+        fig3.savefig(buf3, format="png",bbox_inches='tight')
         buf3.seek(0)
         string3=base64.b64encode(buf3.read())
         uri3=urllib.parse.quote(string3)
@@ -662,7 +742,7 @@ def formreport(request,sid,fid):
     p3 = plt.barh(ind, ng, width,left=np.array(p)+np.array(nt),color='r')
     
     plt.xlabel('Feedback Scores')
-    plt.title('Scores by sentiment')
+    plt.ylabel('Questions')
     plt.tight_layout()
     f=FeedbackForm.objects.get(id=fid)
     fq=f.formquestion_set.all()
@@ -675,14 +755,14 @@ def formreport(request,sid,fid):
         yl.append("Q"+str(i+1))
         finalkey.append("Q"+str(i+1)+"-"+fqlist[i])
     plt.yticks(ind, yl)
-    plt.xticks(np.arange(0, 21, 2))
-    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'))
+    #plt.xticks(np.arange(0, 21, 2))
+    l1=plt.legend((p1[0], p2[0],p3[0]), ('Positive','Neutral','Negative'),loc='upper center', bbox_to_anchor=(0.5, -0.15),fancybox=True, shadow=True, ncol=5)
     #l2=plt.legend(yl, fqlist,loc='best')
     plt.gca().add_artist(l1)
     #plt.gca().add_artist(l2)
     fig4=plt.gcf()
     buf4=io.BytesIO()
-    fig4.savefig(buf4, format="png")
+    fig4.savefig(buf4, format="png",bbox_inches='tight')
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
@@ -712,11 +792,31 @@ def editform(request,sid,fid):
         form=NewQuestionForm()
     return render(request,'courses/editform.html',{'s':s,'f':f,'fq':fq,'form':form})
 
+
 @login_required
 @teacher_only
 def deleteform(request,sid,fid):
     s=Subject.objects.get(id=sid)
     f=FeedbackForm.objects.get(id=fid)
+    #fq=f.formquestion_set.all()
+    f.delete()
+    return redirect('myfeedback', sid=s.id)
+
+@login_required
+@teacher_only
+def upload(request,sid,fid):
+    s=Subject.objects.get(id=sid)
+    d=DraftForm.objects.get(id=fid)
+    f=FeedbackForm(feedback_type=d.feedback_type,sem_type=d.sem_type, subject=d.subject,form_name=d.form_name)
+    f.save()
+    d.delete()
+    return redirect('myfeedback', sid=s.id)
+
+@login_required
+@teacher_only
+def deletedraft(request,sid,fid):
+    s=Subject.objects.get(id=sid)
+    f=DraftForm.objects.get(id=fid)
     #fq=f.formquestion_set.all()
     f.delete()
     return redirect('myfeedback', sid=s.id)

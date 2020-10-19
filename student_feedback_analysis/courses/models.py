@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
+from django.utils import timezone
 # Create your models here.
 class Subject(models.Model):
     subject_name=models.CharField(max_length=100)
@@ -49,6 +50,25 @@ class FormAnswer(models.Model):
     answer = models.TextField()
     processed_answer = models.TextField(default = "heyy")
     sentiment = models.FloatField(default=0.4)
+    time_of_entry = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return str(self.form_question)+"-"+str(self.id)
+
+class DraftForm(models.Model):
+    type_choices=(
+      ('prof', 'Professor Feedback'),
+      ('course', 'Course Feedback'),
+      ('other','Other')
+    )
+    sem_choices=(
+        ('midsem', 'Mid Semester'),
+        ('endsem','End Semester'),
+        ('other','Other')
+    )
+    feedback_type = models.CharField(max_length=100,choices=type_choices)
+    sem_type = models.CharField(max_length=100,choices=sem_choices)
+    subject = models.ForeignKey("Subject", on_delete=models.CASCADE)
+    form_name=models.CharField(max_length = 100,default = "Feedback Form")
+    def __str__(self):
+        return str(self.subject)+"-"+ self.feedback_type + "-" + self.sem_type
