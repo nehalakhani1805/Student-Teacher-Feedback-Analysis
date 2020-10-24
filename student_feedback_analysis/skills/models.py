@@ -19,11 +19,11 @@ class SkillQuestion(models.Model):
 
 class SkillAnswer(models.Model):
     question=models.ForeignKey("SkillQuestion",on_delete=models.CASCADE)
-    yes_or_no = models.BooleanField(default=True)
+    yes_or_no = models.BooleanField(blank=True, null=True)
     student = models.ForeignKey(User,on_delete=models.CASCADE)
-    answer = models.TextField(max_length=225)
+    answer = models.TextField(max_length=225,blank=True, null=True)
     date = models.DateTimeField(default=timezone.now)
-    tags = models.TextField(default = "disciplined")
+    tags = models.TextField(default = "disciplined",blank=True, null=True)
     sentiment = models.FloatField(default=0.0)
     #tags = models.TextField(default = "good")
 

@@ -142,22 +142,47 @@ def subjectdetail(request, sid):
 @login_required
 @teacher_only
 def studentfeedback(request, sid, uid):
-    u=User.objects.get(id=uid)
-    if request.method=='POST':
-        form=StudentFeedbackForm(request.POST)
-        if form.is_valid():
-            obj=form.save(commit=False) #this saves the details to the db
-            #username=form.cleaned_data.get('username') 
-            #not form.username.data
-            obj.student=u
-            obj.save()
-            print(form.cleaned_data.get('question'))
-            messages.success(request,f'Your response has been recorded!')
-            #return render(request, 'courses/studentform.html',{'u':u,'form':form, 'sid' : sid})
-            return redirect('student-feedback',sid=sid, uid=u.id)
-    else:
-        form=StudentFeedbackForm()
-    #return render(request, 'users/profile.html',{'form':form})
+    u=User.objects.get(id=uid)   
+    fq=SkillQuestion.objects.all()
+    fqli=[]
+    i=0
+    for f in fq:
+        i+=1
+        fqli.append(str(i)+". "+f.skill.skill_name+" -> "+f.question)
+    #return render(request,'courses/formquestion.html',{'tid':tid,'sid':sid,'fid':fid,'fq':fq})
+    extra_questions = fqli
+    lemmatizer = WordNetLemmatizer() 
+    form = StudentFeedbackForm(request.POST or None, extra=extra_questions)
+    if form.is_valid():
+        i=0
+        q1=[]
+        a1=[]
+        for (question, answer) in form.extra_answers():
+            i+=1
+            i%=3
+            
+            if i==1:
+                li=question.split("-> ")
+                question=li[1]
+           
+            q1.append(question)
+            a1.append(answer)
+            if i==0:
+                print(q1)
+                print(a1)
+                if a1[1]=='' and a1[2]=='':
+                    pass
+                else:
+                                   
+                    ssid=SentimentIntensityAnalyzer()
+                    ss=ssid.polarity_scores(a1[1])
+                    # f.sentiment=ss['compound']
+                    fa=SkillAnswer(question=SkillQuestion.objects.filter(question=q1[0]).first(),yes_or_no=a1[0],student=u,answer=a1[1],tags=a1[2],sentiment=ss['compound'])
+                    fa.save()
+                    #print("hello")
+                q1=[]
+                a1=[]
+        return redirect('subject-detail', sid=sid)
     return render(request, 'courses/studentform.html',{'u':u,'form':form, 'sid' : sid})
 
 def printstudentreport(uid):
