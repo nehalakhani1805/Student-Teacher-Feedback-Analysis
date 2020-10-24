@@ -401,7 +401,7 @@ def generatepie(s,feedback_type):
     string=base64.b64encode(buf.read())
     uri=urllib.parse.quote(string)
     plt.close()
-    return uri,pl,ngl
+    return uri,pl,ngl,sizes
 
 def generatewordcloud(pl,is_positive):
     p=[]
@@ -463,7 +463,7 @@ def generatebar(p,nt,ng,subjects):
 @teacher_only
 def profreport(request,sid):
     s=Subject.objects.get(id=sid)
-    uri,pl,ngl=generatepie(s,"prof")
+    uri,pl,ngl,sizes=generatepie(s,"prof")
     urip=generatewordcloud(pl,True)
     urin=generatewordcloud(ngl,False)
     s=Subject.objects.filter(teacher=request.user)
@@ -528,15 +528,15 @@ def profreport(request,sid):
     buf4.seek(0)
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
-    
+    total=sum(sizes)
     plt.close()
-    return render(request, 'courses/profreport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid)})
+    return render(request, 'courses/profreport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid),'total':total,'positives':sizes[0],'neutrals':sizes[1],'negatives':sizes[2]})
 
 @login_required
 @teacher_only
 def coursereport(request,sid):
     s=Subject.objects.get(id=sid)
-    uri,pl,ngl=generatepie(s,"course")
+    uri,pl,ngl,sizes=generatepie(s,"course")
     urip=generatewordcloud(pl,True)
     urin=generatewordcloud(ngl,False)
     s2=Subject.objects.filter(subject_name=s.subject_name)
@@ -593,7 +593,8 @@ def coursereport(request,sid):
     string4=base64.b64encode(buf4.read())
     uri4=urllib.parse.quote(string4)
     plt.close()
-    return render(request, 'courses/coursereport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid)})
+    total=sum(sizes)
+    return render(request, 'courses/coursereport.html',{'uri':uri,'urip':urip,'urin':urin,'uri3':uri3,'uri4':uri4,'s':Subject.objects.get(id=sid),'total':total,'positives':sizes[0],'neutrals':sizes[1],'negatives':sizes[2]})
 
 
 @login_required
@@ -740,9 +741,9 @@ def formreport(request,sid,fid):
         #diction['positive']
         urilist=[]
         for i in range(len(urilist3)):
-            li=[]
-            li.append(urilist2[i])
-            li.append(urilist3[i])
+            li={}
+            li['positive']=urilist2[i]
+            li['negative']=urilist3[i]
             urilist.append(li)
 
     #horizontal stacked bar graph

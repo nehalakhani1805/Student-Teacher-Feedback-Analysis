@@ -6,17 +6,24 @@
     <img src="data: image/png;base64,{{ data }}"><br><br><br><br>
 
     <h2>Wordclouds Positive VS Negative</h2><br>
-    <div>
+
     {% for uril,uril2 in urilistzip %}
     
     <h3>{{ uril }}</h3>
-    <br><br>
-    {% for uri in uril2 %}
-    <img src="data: image/png;base64,{{ uri }}" height ='230px',width='230px',style="float:left;">
-    {% endfor %}
-    <br><br><br>
-    {% endfor %}
+    <br>
+    <div class="row2">
+        <div class="column2">
+
+            <img src="data: image/png;base64,{{ uril2.positive }}" style="width:100%;">
+            <figcaption style = "text-align:center;"><h3>Positive</h3></figcaption>
+        </div>
+        <div class="column2">
+            <img src="data: image/png;base64,{{ uril2.negative }}" style="margin-left:50px;width:100%;">
+            <figcaption><h3 style="margin-left:50px;text-align:center;" >Negative</h3></figcaption>
+        </div>
     </div>
+    <br><br>
+    {% endfor %}
     <br><br><br>
     <h2>Question Wise Sentiments</h2>
     <br><br>

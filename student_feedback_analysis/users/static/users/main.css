@@ -95,3 +95,15 @@ body {
   clear: both;
   display: table;
 }
+
+.iconDetails {
+
+ float:left; 
+ 
+ } 
+ 
+ .container3 {
+     width:100%;
+     height:auto;
+     padding:1%;
+ }

@@ -1,17 +1,32 @@
 {% extends "users/base.html" %}
 {% block content %}
     <h1>Cumulative report - Professor - {{ s.subject_name }} {{ s.year }}</h1><br><br>
-    <h2>General Sentiment Ratio</h2>
-    <img src="data: image/png;base64,{{ uri }}">
+    <div class="container3">
+        <h2>General Sentiment Ratio</h2>
+        <div>
+            <img src="data: image/png;base64,{{ uri }}" class="iconDetails">
+        </div>
+        <div style="margin-left:25px;margin-top:50px;">
+            <h3 >Total responses = {{ total }}</h3>
+            <h4 >Positive responses = {{ positives }}</h4>
+            <h4 >Neutral responses = {{ neutrals }}</h4>
+            <h4 >Negative responses = {{ negatives }}</h4>
+        </div>
+        
+    </div>
+    
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <h2 style="float:left;">Wordclouds</h2>
     <br><br><br>
-    <h2>Wordclouds Positive VS Negative</h2>
-    <br>
     <div class="row2">
         <div class="column2">
+
             <img src="data: image/png;base64,{{ urip }}" style="width:100%;">
+            <figcaption style = "text-align:center;"><h3>Positive</h3></figcaption>
         </div>
         <div class="column2">
-            <img src="data: image/png;base64,{{ urin }}" style="width:100%;">
+            <img src="data: image/png;base64,{{ urin }}" style="margin-left:50px;width:100%;">
+            <figcaption><h3 style="margin-left:50px;text-align:center;" >Negative</h3></figcaption>
         </div>
     </div>
    
