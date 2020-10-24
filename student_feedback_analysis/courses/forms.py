@@ -1,6 +1,6 @@
 from django import forms
 from django.db import models
-from .models import Subject, FeedbackForm, FormQuestion, DraftForm
+from .models import Subject, FeedbackForm, FormQuestion, DraftForm, DraftQuestion
 from skills.models import SkillAnswer
 class FormFeedback(forms.Form):
     #username = forms.CharField(max_length=30)
@@ -52,4 +52,16 @@ class EditQuestionForm(forms.ModelForm):
     class Meta:
         model=FormQuestion
         fields=['question']
-        
+
+class NewDraftQuestionForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=DraftQuestion
+        fields=['question']
+class EditDraftQuestionForm(forms.ModelForm):
+    #enrollment_key=forms.CharField(widget=forms.PasswordInput)
+    #required is set to true, you can set it to false if you want
+    class Meta:
+        model=DraftQuestion
+        fields=['question']

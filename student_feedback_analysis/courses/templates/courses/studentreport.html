@@ -1,16 +1,22 @@
 {% extends "users/base.html" %}
 {% block content %}  
-    <h1>HI</h1>
-    <h1>{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</h1><br><br>
-    <h2>General Sentiment Ratio</h2>
-    <img src="data: image/png;base64,{{ uri2 }}"><br><br>
-
-    <h2>General Sentiment Ratio</h2>
-    <img src="data: image/png;base64,{{ uri3 }}"><br><br>
-
-    <h2>General Sentiment Ratio</h2>
+    <br>
+    <h1>Report for {{ u.first_name }} {{ u.last_name }}</h1><br><br>
+   
+    <h2>Wordclouds Positive VS Negative</h2>
+    <br>
+    <div class="row2">
+        <div class="column2">
+            <img src="data: image/png;base64,{{ uri2 }}" style="width:100%;">
+        </div>
+        <div class="column2">
+            <img src="data: image/png;base64,{{ uri3 }}" style="width:100%;">
+        </div>
+    </div>
+    <br><br>
+    <h2>General Sentiment Over Time</h2><br>
     <img src="data: image/png;base64,{{ uri4 }}"><br><br>
-
-    <h2>General Sentiment Ratio</h2>
+    <br><br>
+    <h2>Progress With Time</h2><br>
     <img src="data: image/png;base64,{{ uri5 }}"><br><br>
 {% endblock content %}

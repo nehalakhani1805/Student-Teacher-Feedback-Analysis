@@ -157,8 +157,12 @@ def trying5():
     #                     break
     #             ans.processed_answer = ' '.join(nl)
     #             ans.save()
-
-
+def trying6():
+    f=FeedbackForm.objects.all()
+    for fi in f:
+        fi.form_name = str(fi.get_feedback_type_display())+" "+str(fi.get_sem_type_display())
+        #fi.form_name = str(fi.feedback_type)+" "+str(fi.sem_type)
+        fi.save()
             
 
 

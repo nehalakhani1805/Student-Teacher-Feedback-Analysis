@@ -34,8 +34,8 @@
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-              {% if user.groups.first.name == "teacher" %}
-              <a class="nav-item nav-link" href="{% url 'profile' %}">Hi</a>
+              {% if user.groups.first.name == "student" %}
+              <a class="nav-item nav-link" href="{% url 'my-student-report' %}">View my report</a>
               {% endif %}
               <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
               <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>

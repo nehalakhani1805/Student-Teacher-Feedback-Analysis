@@ -1,7 +1,10 @@
 {% extends "users/base.html" %}
 {% block content %}
-
+    <h2>Feedback forms for {{ s.subject_name}} {{ s.year }}</h2>
+    <br><br>
     {% for fi in f %}
-    <h3><a class="article-title" href="{% url 'feedback-detail' tid sid fi.id %}"> {{ fi.get_feedback_type_display }} for {{ fi.get_sem_type_display }}</a></h3>
+    <a class="btn btn-outline-info" href ="{% url 'feedback-detail' tid s.id fi.id %}" style="float: right;margin-left:20px;">Fill form</a>
+    <h3><a class="article-title" href="#"> {{ fi.form_name }} </a></h3>
+    <br>
     {% endfor %}
 {% endblock content %}

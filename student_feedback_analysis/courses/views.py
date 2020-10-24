@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Subject, FeedbackForm, FormAnswer, FormQuestion, Enroll
+from .models import Subject, FeedbackForm, FormAnswer, FormQuestion, Enroll, DraftForm, DraftQuestion
 from users.decorators import unauthenticated_user, student_only, teacher_only
 from django.contrib.auth.decorators import login_required
-from .forms import FormFeedback, EnrollForm, StudentFeedbackForm, NewForm, NewQuestionForm, EditQuestionForm, DraftForm
+from .forms import FormFeedback, EnrollForm, StudentFeedbackForm, NewForm, NewQuestionForm, EditQuestionForm, NewDraftQuestionForm, EditDraftQuestionForm
 from django.contrib import messages
 import pandas as pd
 import nltk
@@ -52,7 +52,7 @@ def subjectfeedback(request,tid,sid):
     if flag==True:
         #t=User.objects.get(id=tid)
         
-        return render(request,'courses/formlist.html',{'tid':tid,'sid':sid,'f':f})
+        return render(request,'courses/formlist.html',{'tid':tid,'s':s,'f':f})
     else:
         if request.method=='POST':
             form=EnrollForm(request.POST)
@@ -66,7 +66,7 @@ def subjectfeedback(request,tid,sid):
                 e.save()
                 messages.success(request,f'Welcome')
                 #note the single braces
-                return render(request,'courses/formlist.html',{'tid':tid,'sid':sid,'f':f})
+                return render(request,'courses/formlist.html',{'tid':tid,'s':s,'f':f})
             else:
                 messages.warning(request,f'Incorrect enrollment key')
         else:
@@ -160,9 +160,7 @@ def studentfeedback(request, sid, uid):
     #return render(request, 'users/profile.html',{'form':form})
     return render(request, 'courses/studentform.html',{'u':u,'form':form, 'sid' : sid})
 
-@login_required
-def studentreport(request, sid, uid):
-    # sa = SkillAnswer.objects.all()
+def printstudentreport(uid):
     taggedWords = []
     pos = []
     neg = []
@@ -269,26 +267,8 @@ def studentreport(request, sid, uid):
                     diction[a.date.year][2]+=a.sentiment
                     diction[a.date.year][3]+=1
 
-                # if a.date.month <=6:
-                #     stemp="June" + str(a.date.year)
-                #     if stemp not in diction:
-                #         diction[stemp]=[a.sentiment]
-                #     else:
-                #         diction[stemp].append(a.sentiment)
-                # else:
-                #     stemp="Dec" + str(a.date.year)
-                #     if stemp not in diction:
-                #         diction[stemp]=[a.sentiment]
-                #     else:
-                #         diction[stemp].append(a.sentiment)
         diction2={}
         for stemp in sorted(diction):
-            #l=len(diction[stemp])
-            #sumi=0
-            #for i in diction[stemp]:
-            #     sumi+=i
-            # sumi=sumi/l*100
-            # diction2[stemp]=sumi
             temp="June"+str(stemp)
             temp2="Dec"+str(stemp)
             try:
@@ -299,8 +279,6 @@ def studentreport(request, sid, uid):
                 diction2[temp2]=diction[stemp][2]/diction[stemp][3]
             except:
                 diction2[temp2]=0.0
-
-
         plt.plot(list(diction2.keys()),list(diction2.values()))
         s_to_print.append(s.skill_name)
     #print(s.skill_name)
@@ -318,9 +296,22 @@ def studentreport(request, sid, uid):
     uri5=urllib.parse.quote(string5)
     
     plt.close()
-    return render(request, 'courses/studentreport.html', { 'uri2' : uri2, 'uri3' : uri3 ,'uri4':uri4,'uri5':uri5})
+    return uri2, uri3, uri4, uri5
 
+@login_required
+@teacher_only
+def studentreport(request, sid, uid):
+    # sa = SkillAnswer.objects.all()
+    u=User.objects.get(id=uid)
+    uri2,uri3,uri4,uri5=printstudentreport(uid)
+    return render(request, 'courses/studentreport.html', {'u':u,'uri2' : uri2, 'uri3' : uri3 ,'uri4':uri4,'uri5':uri5})
 
+@login_required
+@student_only
+def mystudentreport(request):
+    # sa = SkillAnswer.objects.all()
+    uri2,uri3,uri4,uri5=printstudentreport(request.user.id)
+    return render(request, 'courses/studentreport.html', {'u':request.user, 'uri2' : uri2, 'uri3' : uri3 ,'uri4':uri4,'uri5':uri5})
 
 
 @login_required
@@ -482,8 +473,8 @@ def profreport(request,sid):
             sume=0
             te=0
             tm=0
-            fm=si.feedbackform_set.all().filter(Q(sem_type="midsem") & Q(feedback_type="course"))
-            fe=si.feedbackform_set.all().filter(Q(sem_type="endsem") & Q(feedback_type="course"))
+            fm=si.feedbackform_set.all().filter(Q(sem_type="midsem") & Q(feedback_type="prof"))
+            fe=si.feedbackform_set.all().filter(Q(sem_type="endsem") & Q(feedback_type="prof"))
             fa=FormAnswer.objects.all()
             for fai in fa:
                 if fai.form_question.feedback_form in fm:
@@ -523,12 +514,12 @@ def coursereport(request,sid):
     uri,pl,ngl=generatepie(s,"course")
     urip=generatewordcloud(pl,True)
     urin=generatewordcloud(ngl,False)
-    s=Subject.objects.filter(teacher=request.user)
+    s2=Subject.objects.filter(subject_name=s.subject_name)
     subli=[]
     pl=[]
     ntl=[]
     ngl=[]
-    for si in s:
+    for si in s2:
         subli.append(si.subject_name+"-"+str(si.year))
         p,nt,ng=findnumber(si,'course')
         #print(p," ",nt," ",ng)
@@ -562,8 +553,9 @@ def coursereport(request,sid):
         li.append(sm)
         li.append(se)
     plt.plot(time_array,li)
-    s_to_print=s.subject_name
-    plt.legend(s_to_print,loc="lower right")
+    s_to_print=[s.subject_name]
+    #plt.legend(s_to_print,loc="lower right")
+    plt.legend(s_to_print,loc='upper center', bbox_to_anchor=(0.5, -0.15),fancybox=True, shadow=True, ncol=5)
     print("SUbject name is ",s.subject_name)
     plt.xlabel('Time')
     plt.ylabel('Sentiment score')
@@ -809,8 +801,29 @@ def upload(request,sid,fid):
     d=DraftForm.objects.get(id=fid)
     f=FeedbackForm(feedback_type=d.feedback_type,sem_type=d.sem_type, subject=d.subject,form_name=d.form_name)
     f.save()
+    df=d.draftquestion_set.all()
+    for dfi in df:
+        fq=FormQuestion(feedback_form=f,question=dfi.question)
+        fq.save()
     d.delete()
     return redirect('myfeedback', sid=s.id)
+
+@login_required
+@teacher_only
+def editdraft(request,sid,fid):
+    s=Subject.objects.get(id=sid)
+    f=DraftForm.objects.get(id=fid)
+    fq=f.draftquestion_set.all()
+    if request.method=='POST':
+        form=NewDraftQuestionForm(request.POST)
+        form.instance.draft_form=f
+        if form.is_valid():
+            form.save()
+            return redirect('editdraft', sid=sid, fid=fid)
+    else:
+        form=NewDraftQuestionForm()
+    return render(request,'courses/editdraft.html',{'s':s,'f':f,'fq':fq,'form':form})
+
 
 @login_required
 @teacher_only
@@ -832,6 +845,14 @@ def deletequestion(request,sid,fid,fqid):
 
 @login_required
 @teacher_only
+def deletedraftquestion(request,sid,fid,fqid):
+    s=Subject.objects.get(id=sid)
+    f=DraftForm.objects.get(id=fid)
+    fq=DraftQuestion.objects.get(id=fqid)
+    fq.delete()
+    return redirect('editdraft', sid=sid, fid=fid)
+@login_required
+@teacher_only
 def editquestion(request, sid,fid,fqid):
     s=Subject.objects.get(id=sid)
     f=FeedbackForm.objects.get(id=fid)
@@ -847,3 +868,21 @@ def editquestion(request, sid,fid,fqid):
 
         form=EditQuestionForm(instance=fq)
     return render(request,'courses/editquestion.html',{'s':s,'f':f,'fq':fq,'form':form})
+
+@login_required
+@teacher_only
+def editdraftquestion(request, sid,fid,fqid):
+    s=Subject.objects.get(id=sid)
+    f=DraftForm.objects.get(id=fid)
+    fq=DraftQuestion.objects.get(id=fqid)
+    if request.method=='POST':
+        form=EditDraftQuestionForm(request.POST,instance=fq)
+        form.instance.draft_form=f
+        if form.is_valid():
+            fq.question=form.instance.question
+            fq.save()
+            return redirect('editdraft', sid=sid, fid=fid)
+    else:
+
+        form=EditDraftQuestionForm(instance=fq)
+    return render(request,'courses/editdraftquestion.html',{'s':s,'f':f,'fq':fq,'form':form})

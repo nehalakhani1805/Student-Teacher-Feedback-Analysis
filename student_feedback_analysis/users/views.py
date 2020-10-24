@@ -61,5 +61,5 @@ def profile(request):
 @login_required
 @teacher_only
 def test(request):
-    data.trying5()
+    data.trying6()
     return render(request,'users/home.html')

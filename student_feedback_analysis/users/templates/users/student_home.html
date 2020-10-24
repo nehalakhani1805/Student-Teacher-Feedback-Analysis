@@ -6,17 +6,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <div class="container">
-    <br><br><br>           
+    <br><br>  
     <table class="table table-striped">
       <thead>
         <tr>
           <th><h2>Faculty</h2></th>
+          <br><br>
         </tr>
       </thead>
       <tbody>
     {% for l in li %}
     <tr>
-        <td><h3><a class="article-title" href="{% url 'subjects' l.id %}">{{ l.username }}</a></h3></td>
+        <td><h3><a class="article-title" href="{% url 'subjects' l.id %}">{{ l.first_name }} {{ l.last_name }}</a></h3></td>
     </tr>
     {% endfor %}
     </tbody>

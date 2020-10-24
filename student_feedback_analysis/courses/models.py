@@ -34,11 +34,12 @@ class FeedbackForm(models.Model):
     subject = models.ForeignKey("Subject", on_delete=models.CASCADE)
     form_name=models.CharField(max_length = 100,default = "Feedback Form")
     def __str__(self):
-        return str(self.subject)+"-"+ self.feedback_type + "-" + self.sem_type
+        return str(self.subject)+"-"+ self.form_name 
 
 class FormQuestion(models.Model):
     feedback_form = models.ForeignKey("FeedbackForm", on_delete=models.CASCADE)
     question = models.CharField(max_length=225)
+    #draft_form = models.ForeignKey("FeedbackForm", on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.feedback_form)+"-Q"+ str(self.id)
@@ -72,3 +73,12 @@ class DraftForm(models.Model):
     form_name=models.CharField(max_length = 100,default = "Feedback Form")
     def __str__(self):
         return str(self.subject)+"-"+ self.feedback_type + "-" + self.sem_type
+
+class DraftQuestion(models.Model):
+    draft_form = models.ForeignKey("DraftForm", on_delete=models.CASCADE)
+    question = models.CharField(max_length=225)
+    #draft_form = models.ForeignKey("FeedbackForm", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.draft_form)+"-Q"+ str(self.id)
+
