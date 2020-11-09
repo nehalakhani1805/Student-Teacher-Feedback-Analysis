@@ -8,12 +8,13 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <div class="container">
     <br><br><br>           
-    <table class="table table-striped">
+    <table class="table table-striped" style="background: rgba(255,255,255,0.5);">
       <thead>
-        <tr>
-            <a class="btn btn-outline-info" href ="{% url 'myfeedback' s.id %}" style="float: right;">View my feedbacks</a>
-            <br><br>
-            <h2>Student Feedbacks</h2><br>
+        <br>
+            <a class="btn btn-info" href ="{% url 'myfeedback' s.id %}" style="float: right;">View my feedbacks</a>
+            <br>
+          <tr >
+            <th style="background: rgba(0,0,0,0.5);"><h2 style="color:white;">Student Feedbacks</h2></th><br>
         </tr>
       </thead>
       <tbody>

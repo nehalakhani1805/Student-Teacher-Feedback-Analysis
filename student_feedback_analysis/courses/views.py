@@ -109,7 +109,7 @@ def feedbackdetail(request,tid,sid,fid):
             tokenized=[lemmatizer.lemmatize(w) for w in tokenized2]
             #tokenized=[ps.stem(w) for w in tokenized3]
             pos=nltk.tag.pos_tag(tokenized)
-            ed=[word for word,tag in pos if tag!='NNP' and tag!='NNPs']#removing proper nouns
+            ed=[word for word,tag in pos if tag!='NNP' and tag!='NNPs'] #removing proper nouns
             end=' '.join(ed)
 
             #remove stop words
@@ -670,12 +670,13 @@ def formreport(request,sid,fid):
     print(len(pl.keys()))
     print(len(ngl.keys()))
     labels = 'Positive', 'Neutral', 'Negative'
-    sizes = [p,nt,ng]
+    sizesfinal = [p,nt,ng]
+    total=sum(sizesfinal)
     colors = ['gold', 'lightcoral','yellowgreen']
     explode = (0.1, 0, 0)  # explode 1st slice
     
     # Plot
-    plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+    plt.pie(sizesfinal, explode=explode, labels=labels, colors=colors,
             autopct='%1.1f%%', shadow=True, startangle=140)
     
     plt.axis('equal')
@@ -788,7 +789,7 @@ def formreport(request,sid,fid):
     plt.close()
     urilistzip=zip(finalkey,urilist)
     #plt.show()
-    return render(request,'courses/formreport.html',{'fi':fi,'data': uri,'l2':len(urilist2),'l3':len(urilist3),'urilist':urilist,'uri4':uri4,'finalkey':finalkey,'urilistzip':urilistzip})
+    return render(request,'courses/formreport.html',{'fi':fi,'data': uri,'l2':len(urilist2),'l3':len(urilist3),'urilist':urilist,'uri4':uri4,'finalkey':finalkey,'urilistzip':urilistzip,'total':total,'positives':sizesfinal[0],'neutrals':sizesfinal[1],'negatives':sizesfinal[2]})
     #return render(request,'courses/test.html')
 
 

@@ -1,8 +1,8 @@
 {% extends "users/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}    
-    <h3>{{ u.first_name }} {{ u.last_name }}</h3>
-    <a class="btn btn-outline-info" href ="{% url 'student-report' sid u.id %}" style="float: right;">View {{ u.first_name }}'s report</a>
+    <h2 style="color:black;background-color:beige;display:inline;padding: 5px;">{{ u.first_name }} {{ u.last_name }}</h2>
+    <a class="btn btn-info" href ="{% url 'student-report' sid u.id %}" style="float: right;">View {{ u.first_name }}'s report</a>
     <br><br>
     <div class="content-section">
         <form method="POST" action =".">

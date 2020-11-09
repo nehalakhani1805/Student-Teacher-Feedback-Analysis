@@ -1,10 +1,11 @@
 {% extends "users/base.html" %}
 {% block content %}
-    <h1>Cumulative report - Professor - {{ s.subject_name }} {{ s.year }}</h1><br><br>
+<div style="background-color:beige;padding:10px;border:3px solid black;">
+    <u><h1 style="text-align: center;">Cumulative report - Professor - {{ s.subject_name }} {{ s.year }}</h1></u><br><br>
     <div class="container3">
-        <h2>General Sentiment Ratio</h2>
+        <h2 style="text-align: center;">General Sentiment Ratio</h2>
         <div>
-            <img src="data: image/png;base64,{{ uri }}" class="iconDetails">
+            <img src="data: image/png;base64,{{ uri }}" style="margin-left:10%"class="iconDetails">
         </div>
         <div style="margin-left:25px;margin-top:50px;">
             <h3 >Total responses = {{ total }}</h3>
@@ -16,25 +17,26 @@
     </div>
     
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <h2 style="float:left;">Wordclouds</h2>
-    <br><br><br>
+    <h2 style="text-align: center;">Wordclouds</h2>
+    
     <div class="row2">
         <div class="column2">
 
-            <img src="data: image/png;base64,{{ urip }}" style="width:100%;">
+            <img src="data: image/png;base64,{{ urip }}" style="width:93%;">
             <figcaption style = "text-align:center;"><h3>Positive</h3></figcaption>
         </div>
         <div class="column2">
-            <img src="data: image/png;base64,{{ urin }}" style="margin-left:50px;width:100%;">
+            <img src="data: image/png;base64,{{ urin }}" style="margin-left:50px;width:91%;">
             <figcaption><h3 style="margin-left:50px;text-align:center;" >Negative</h3></figcaption>
         </div>
     </div>
    
     
     <br><br>
-    <h2>Course Wise Analysis</h2>
-    <img src="data: image/png;base64,{{ uri3 }}">
-    <br><br>
-    <h2>Sentiments Over Time</h2>
-    <img src="data: image/png;base64,{{ uri4 }}"><br><br>
+    <h2 style="text-align: center;">Course Wise Analysis</h2>
+    <img src="data: image/png;base64,{{ uri3 }}" style="margin-left:20%">
+    <br><br><br>
+    <h2 style="text-align: center;">Sentiments Over Time</h2>
+    <img src="data: image/png;base64,{{ uri4 }}" style="margin-left:20%"><br><br>
+</div>
 {% endblock content %}

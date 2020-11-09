@@ -1,10 +1,12 @@
 {% extends "users/base.html" %}
 {% block content %}
-    <h2>Feedback forms for {{ s.subject_name}} {{ s.year }}</h2>
+<div style="background-color:beige;padding:10px;border:3px solid black;">
+    <u><h2 style="text-align: center;">Feedback forms for {{ s.subject_name}} {{ s.year }}</h2></u>
     <br><br>
     {% for fi in f %}
     <a class="btn btn-outline-info" href ="{% url 'feedback-detail' tid s.id fi.id %}" style="float: right;margin-left:20px;">Fill form</a>
     <h3><a class="article-title" href="#"> {{ fi.form_name }} </a></h3>
     <br>
     {% endfor %}
+</div>
 {% endblock content %}

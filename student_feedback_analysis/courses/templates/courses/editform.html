@@ -6,16 +6,19 @@
 	{% csrf_token %}
 	<fieldset class="form-group">
 
-		{{ form|crispy }}
+        {{ form|crispy }}
+        <button class="btn btn-info" style="float: right;"type="submit">Add question</button>
 	</fieldset>
-	<button class="btn btn-outline-info" style="float: right;"type="submit">Add question</button>
+	
 </form>
 <br><br>
-    <h3>Edit Questions</h3>
+<div style="background-color:beige;padding:10px;border:3px solid black;">
+    <u><h3 style="text-align: center;">Edit Questions</h3></u>
     
     {% for fi in fq %}
     <a class="btn btn-outline-danger" href ="{% url 'deletequestion' s.id f.id fi.id %}" style="float: right;margin-left:20px;">Delete</a>
     <a class="btn btn-outline-info" href ="{% url 'editquestion' s.id f.id fi.id %}" style="float: right;margin-left:20px;">Edit</a>
     <h3><a class="article-title" href="#">{{ fi.question }}</a></h3>
     {% endfor %}
+    </div>
 {% endblock content %}

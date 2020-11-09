@@ -1,31 +1,42 @@
 {% extends "users/base.html" %}
 {% block content %}
-    <h1>{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</h1><br><br>
-    <h2>General Sentiment Ratio</h2>
-    <br><br>
-    <img src="data: image/png;base64,{{ data }}"><br><br><br><br>
-
-    <h2>Wordclouds Positive VS Negative</h2><br>
+<div style="background-color:beige;padding:10px;border:3px solid black;">
+    <u><h1 style="text-align: center;">{{ fi.get_feedback_type_display }} {{ fi.get_sem_type_display }}</h1></u><br><br>
+    <div class="container3">
+        <h2 style="text-align: center;">General Sentiment Ratio</h2>
+        <div>
+            <img src="data: image/png;base64,{{ data }}"  style="margin-left:20%" class="iconDetails">
+        </div>
+        <div style="margin-left:25px;margin-top:50px;">
+            <h3 >Total responses = {{ total }}</h3>
+            <h4 >Positive responses = {{ positives }}</h4>
+            <h4 >Neutral responses = {{ neutrals }}</h4>
+            <h4 >Negative responses = {{ negatives }}</h4>
+        </div>
+        
+    </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <h2 style="text-align: center;"">Wordclouds Positive VS Negative</h2><br>
 
     {% for uril,uril2 in urilistzip %}
     
-    <h3>{{ uril }}</h3>
+    <h3 style="text-align: center;">{{ uril }}</h3>
     <br>
     <div class="row2">
         <div class="column2">
 
-            <img src="data: image/png;base64,{{ uril2.positive }}" style="width:100%;">
-            <figcaption style = "text-align:center;"><h3>Positive</h3></figcaption>
+            <img src="data: image/png;base64,{{ uril2.positive }}" style="width:93%;">
+            <figcaption style = "text-align:center;"><h3 style="text-align: center;">Positive</h3></figcaption>
         </div>
         <div class="column2">
-            <img src="data: image/png;base64,{{ uril2.negative }}" style="margin-left:50px;width:100%;">
-            <figcaption><h3 style="margin-left:50px;text-align:center;" >Negative</h3></figcaption>
+            <img src="data: image/png;base64,{{ uril2.negative }}" style="margin-left:50px;width:91%;">
+            <figcaption><h3 style="margin-left:30px;text-align: center;" >Negative</h3></figcaption>
         </div>
     </div>
     <br><br>
     {% endfor %}
     <br><br><br>
-    <h2>Question Wise Sentiments</h2>
+    <h2 style="text-align: center;">Question Wise Sentiments</h2>
     <br><br>
     <div style = "float:right;">
         <br>
@@ -36,7 +47,7 @@
     
     </div>
     <img src="data: image/png;base64,{{ uri4 }}"width="50%" height="15%">
-    
+</div>
     
     
 {% endblock content %}

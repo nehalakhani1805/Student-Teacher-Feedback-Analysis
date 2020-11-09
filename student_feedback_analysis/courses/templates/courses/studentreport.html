@@ -1,9 +1,10 @@
 {% extends "users/base.html" %}
 {% block content %}  
+<div style="background-color:beige;padding:10px;border:3px solid black;">
     <br>
-    <h1>Report for {{ u.first_name }} {{ u.last_name }}</h1><br><br>
+    <u><h1 style="text-align: center;">Report for {{ u.first_name }} {{ u.last_name }}</h1><br><br></u>
    
-    <h2>Wordclouds Positive VS Negative</h2>
+    <h2 style="text-align: center;">Wordclouds Positive VS Negative</h2>
     <br>
     <div class="row2">
         <div class="column2">
@@ -14,9 +15,11 @@
         </div>
     </div>
     <br><br>
-    <h2>General Sentiment Over Time</h2><br>
-    <img src="data: image/png;base64,{{ uri4 }}"><br><br>
+    <h2 style="text-align: center;">General Sentiment Over Time</h2><br>
+        <img src="data: image/png;base64,{{ uri4 }}" style="margin-left:20%"><br><br>
     <br><br>
-    <h2>Progress With Time</h2><br>
-    <img src="data: image/png;base64,{{ uri5 }}"><br><br>
+    <h2 style="text-align: center;">Progress With Time</h2><br>
+    <img src="data: image/png;base64,{{ uri5 }}" style="margin-left:20%"><br><br>
+
+</div>
 {% endblock content %}
